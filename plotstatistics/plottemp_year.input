@@ -1,0 +1,78 @@
+# TEMPERATURE Statistics of a YEAR
+#
+# Rev. 20160213/PLI
+# based on script from tmj@bitwrap.no
+# http://annoyingdesigns.com
+#
+# file variables
+tmpdir  = '/var/tmp/'
+year    = system("head -1 ".tmpdir."labels.tmp")
+datain  = tmpdir . year . '.statistics_month.csv'
+dataout = tmpdir . 'plottemp_' . year . '.png' 
+
+
+# ------------------------------------------------------------------------------------------
+# PERFORM THE ACTUAL PLOT
+set terminal png enhanced size 1080, 960
+set output dataout
+
+# get lables
+# titles
+XTIT    = system("tail -11 ".tmpdir."labels.tmp | head -1")
+YLAB    = system("tail -10 ".tmpdir."labels.tmp | head -1")
+
+# min/max/mean values
+LAVG    = system("tail  -6 ".tmpdir."labels.tmp | head -1")
+LMIN    = system("tail  -8 ".tmpdir."labels.tmp | head -1")
+LMAX    = system("tail  -7 ".tmpdir."labels.tmp | head -1")
+
+# label names
+LICE    = system("tail  -6 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $1}'")
+LFRE    = system("tail  -5 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $1}'")
+LSUM    = system("tail  -4 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $1}'")
+LHEA    = system("tail  -3 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $1}'")
+LDES    = system("tail  -2 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $1}'")
+LTRO    = system("tail  -1 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $1}'")
+# lable values
+TICE    = system("tail  -6 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $2}'")
+TFRE    = system("tail  -5 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $2}'")
+TSUM    = system("tail  -4 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $2}'")
+THEA    = system("tail  -3 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $2}'")
+TDES    = system("tail  -2 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $2}'")
+TTRO    = system("tail  -1 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $2}'")
+
+# ------------------------------------------------------------------------------------------
+
+set ylabel sprintf("%s", YLAB)
+set title sprintf("%s %s", XTIT,year)
+set grid
+
+set xtics font 'Verdana, 8'
+set ytics 2 
+
+set timefmt '%Y-%m-%d'
+set datafile separator ','
+set format x "%b %Y"
+
+set key invert reverse Left outside font "Courier New,10"
+set style histogram rowstacked
+set style data histograms
+set style fill solid border -1
+set boxwidth 0.80
+
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+#
+# timestamp,MinTemperatur,MaxTemperatur,AvgTemperatur,
+#   Eistage,Frosttage,Sommertage,Hitzetage,Wuestentage,Tropennaechte
+plot datain using ($6)*(-1):xtic(strftime('%b %Y', strptime('%Y-%m-%d', strcol(1)))) with boxes lc rgb "#91bfdb" title sprintf("[T_{min< %s }] %s", TFRE, LFRE) axis x1y1, \
+ '' u ($5)*(-1) with boxes lc rgb "#4575b4" title sprintf("[T_{max< %s }] %s", TICE, LICE) axis x1y1, \
+ '' u  7 with boxes lc rgb "#fc8d59" title sprintf("[T_{max>=%s}] %s", TSUM, LSUM   ) axis x1y1, \
+ '' u  8 with boxes lc rgb "#e9a3c9" title sprintf("[T_{max>=%s}] %s", THEA, LHEA   ) axis x1y1, \
+ '' u  9 with boxes lc rgb "#c51b7d" title sprintf("[T_{max>=%s}] %s", TDES, LDES   ) axis x1y1, \
+ '' u 10 with boxes lc rgb "#bd0026" title sprintf("[T_{min>=%s}] %s", TTRO, LTRO)
+
+reset
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+

@@ -1,0 +1,72 @@
+# TEMPERATURE Statistics
+#
+# Rev. 20160213/PLI
+# based on script from tmj@bitwrap.no
+# http://annoyingdesigns.com
+#
+# file variables
+tmpdir  = '/var/tmp/'
+year    = system("head -1 ".tmpdir."year") 
+datain  = tmpdir . year . '.statistics_month.csv'
+dataout = tmpdir . 'plottemp_chart' . year . '.png' 
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
+set terminal unknown
+set xdata time
+set timefmt '%Y-%m-%d'
+set datafile separator ','
+plot datain using 1:3
+
+Tmax_min_y = GPVAL_DATA_Y_MIN
+Tmax_max_y = GPVAL_DATA_Y_MAX
+
+reset
+
+# ------------------------------------------------------------------------------------------
+
+set terminal png enhanced size 1080, 960
+set output dataout
+
+set size ratio 0.5
+
+# NOTE: Set ylabel for temperature in degrees C
+set ylabel "Temperature \260C"
+
+set title sprintf("TEMPERATURE Statistik für %s", year)
+set grid
+
+set key below
+set key spacing 3
+
+set y2tics
+set ytics nomirror
+#set yrange[(Td_min_y < 17 ? 17 : Td_min_y-1) : (Td_max_y > Tv_max_y ? Td_max_y+1 : Tv_max_y+1)]
+#set xrange [ * : GPVAL_DATA_X_MAX ]
+
+set xtics font 'Verdana, 8'
+set ytics 2 
+
+set x2data time
+set timefmt '%Y-%m-%d'
+set datafile separator ','
+#set format x "%b-%Y"
+
+
+set style line 1 lc rgb '#0060ad' lt 1 lw 2
+set style line 2 lc rgb '#dd181f' lt 9 lw 2
+set style line 3 lc rgb '#29c524' lt 6 lw 2
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+#
+# timestamp,MinTemperatur,MaxTemperatur,AvgTemperatur,
+#   Eistage,Frosttage,Sommertage,Hitzetage,Wuestentage,Tropennaechte
+#
+plot datain using 1:3 with lines ls 1 smooth bezier title sprintf("   T_{max}") axis x1y1, \
+'' using 1:4 with lines ls 2 smooth bezier title sprintf("   T_{mean}") axis x1y1, \
+'' using 1:2 with lines ls 3 smooth bezier title sprintf("   T_{min}") axis x1y1
+
+reset
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+

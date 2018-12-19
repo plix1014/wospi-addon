@@ -1,0 +1,13 @@
+#
+# SUNPLOT CONFIGURATION ADDON FILE FOR WOSPi
+
+# your town
+TOWN = '<town>'
+
+# csv for sunrise and sunset times
+SUNTIMEFILE           = CSVPATH + 'suntimes.csv'
+
+# plottitle for sun charts
+PLOTSUNTIMEALLTITLE   = 'SUNRISE and SUNSET DATA from ' + TOWN
+PLOTSUNSHINETITLE     = 'DAYLIGHT DATA from ' + TOWN
+

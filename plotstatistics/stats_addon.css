@@ -1,0 +1,23 @@
+
+.df thead th { background-color: #b8b1f5; }
+.df tbody tr:last-child { background-color: #b8b1f5; }
+
+.df{
+	width:100%; 
+	border-collapse:collapse; 
+}
+.df td{ 
+	padding:7px; border:#4e95f4 1px solid;
+}
+/* provide some minimal visual accomodation for IE8 and below */
+.df tr{
+	background: #b8d1f3;
+}
+/*  Define the background color for all the ODD background rows  */
+.df tr:nth-child(odd){ 
+	background: #b8d1f3;
+}
+/*  Define the background color for all the EVEN background rows  */
+.df tr:nth-child(even){
+	background: #dae5f4;
+}
