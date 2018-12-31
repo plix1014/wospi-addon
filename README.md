@@ -6,10 +6,10 @@ This software reads the sensor data from the Davis Vantage/Vue weather station c
 
 
 
-## plotsun
+### plotsun
 plot sunrise, sunset and sunshine charts based on sensor data
 
-## plotstatistics
+### plotstatistics
 plot historical temperatur stats
 
 
