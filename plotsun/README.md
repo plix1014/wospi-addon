@@ -52,6 +52,7 @@ This script gets the times from
 ```
 /var/tmp/sunrise.tmp  
 /var/tmp/sunset.tmp
+```
 
 and saves them to
 ```
