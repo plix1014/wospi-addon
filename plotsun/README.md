@@ -98,7 +98,6 @@ convertsolardata.py
 ```
 
 You should now have a 'suntimes_conv.csv' in your CSVPATH
-
 ```
 cd CSVPATH
 cp suntimes_conv.csv suntimes.csv
@@ -107,7 +106,6 @@ cp suntimes_conv.csv suntimes.csv
 
 b) go to https://www.nrel.gov/midc/solpos/spa.html
 and fill in your values and download the file
-
 ```
 copy it to CSVPATH/suntimes_url.csv
 ```
@@ -116,8 +114,8 @@ now run:
 ```
 convertsolardata.py
 ```
-You should find a 'suntimes_conv.csv' in your CSVPATH
 
+You should find a 'suntimes_conv.csv' in your CSVPATH
 ```
 cd CSVPATH
 cp suntimes_conv.csv suntimes.csv
