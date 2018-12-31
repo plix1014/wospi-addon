@@ -6,7 +6,7 @@ plot sunrise, sunset and sunshine charts based on sensor data
 ### Prerequisites
 
 * [Davis Vantage Pro2](https://www.davisinstruments.com/solution/vantage-pro2/) with solar radiation sensor
-* [WOSPi](http://www.annoyingdesigns.com/wospi/)
+* [WOSPi](http://www.annoyingdesigns.com/wospi/) software
 * python 'ephem' module
 
 
@@ -34,7 +34,7 @@ or: use vim to copy parameters to config.py
 vim -p config.py config.addon
 ```
 
-edit TOWN. 
+edit TOWN variable. 
 
 
 install python module ephem
@@ -42,9 +42,8 @@ install python module ephem
 $ sudo pip install ephem
 ```
 
-store sun data
-
-check and edit WOSPI_HOME in script
+To store sun data check and edit WOSPI_HOME variable in script. 
+Then run it:
 ```
 $ store_sunrise_set_times.sh
 ```
@@ -54,7 +53,7 @@ This script gets the times from
 /var/tmp/sunrise.tmp  
 /var/tmp/sunset.tmp
 
-and saves to
+and saves them to
 ```
 CSVPATH/suntimes.csv 
 ```
@@ -63,16 +62,14 @@ you probably need to run this script several days, bevor you can plot the first 
 If you don't want to wait, you can download weather data. See below
 
 
-run plot script
+Now manually run the plot script
 ```
 python plotSun.py
 ```
 
-check the png. If everything is fine, activate SCP transfer (DO_SCP=True) and add it to your HP.
+check the png file. If everything is fine, activate SCP transfer (DO_SCP=True) and add it to your HP.
 
-
-setup the cronjobs
-run the script once a day
+setup the cronjobs to run the script once a day
 ```
 05 06   * * *   wospi  cd ~/weather && ./store_sunrise_set_times.sh > /var/log/store_suntimes.log 2>&1
 08 06   * * *   wospi  cd ~/weather && python plotSun.py            > /var/log/plotSun.log 2>&1
