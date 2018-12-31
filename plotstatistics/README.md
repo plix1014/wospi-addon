@@ -1,75 +1,130 @@
+# plotstatistics
 
-This script creates some statistics about your temperature.
-A bar graph image and a table representation of the various thresholds
-
-
-1. Install Script and addons
-
-a) Script 
-	copy plotStatistics.py plottemp_chart.input and plottemp_year.input to your wospi installation 
+plot historical temperatur stats
 
 
-b) addon modules
+### Prerequisites
 
-	# install numpy
+* [Davis Vantage Pro2](https://www.davisinstruments.com/solution/vantage-pro2/) with solar radiation sensor
+* [WOSPi](http://www.annoyingdesigns.com/wospi/) software
+* python 'numpy' module
+* python 'pandas' module
 
-	sudo apt-get install python-numpy
 
-	
-	# install pandas 0.14 ... there is no precomiled module available. You need to compile yourself
-	# raspbian 7 (wheezy) only provides v. 0.8
-	takes quite a long time
+### Installing
 
-	# install dev libs
-	sudo apt-get install python-dev
+copy files to your wospi installation.
 
-	# if memory is < 1GB, temporarily increase temp mem with swap file
-	# e.g.: Raspberry Model B Revision 2.0
-	sudo mkdir /home/swap
-	sudo dd if=/dev/zero of=/home/swap/swap0 bs=1M count=512
-	sudo chmod 0600 /home/swap/swap0 
-	sudo mkswap /home/swap/swap0 
-	sudo swapon /home/swap/swap0 
+e.g.: /home/wospi/weather/
+```
+cp plotStatistics.py /home/wospi/weather
+cp plottemp_chart.input /home/wospi/weather
+cp plottemp_year.input/home/wospi/weather
+```
 
-	# download software
-	wget https://pypi.python.org/packages/source/p/pandas/pandas-0.14.1.tar.gz
+### Python module installation
 
-	# compile; takes quite a long time to compile(more than 2h)
-	tar xzf pandas-0.14.1.tar.gz
-	cd pandas-0.14.1
-	python setup.py build
-	  => pandas-0.14.1-py2.7-linux-armv6l.egg
-	sudo python setup.py install
+#### install numpy
 
-	sudo swapoff /home/swap/swap0 
-	rm -rf /home/swap
+```
+sudo apt-get install python-numpy
+```
 
-	# /usr/local/lib/python2.7/dist-packages/
-	# pandas-0.14.1-py2.7-linux-armv6l.egg
-	#
+#### install dev libs
+```
+sudo apt-get install python-dev
+```
 
-c) configure script
-	Set "DO_SCP=True", if png and image should be uploaded to your website.
-	temporary files and png are removed after the upload, if you don't want to delete, set 
-	KEEP_PNG and KEEP_TMP to False
+#### compile pandas
+install pandas 0.14 ... there is no precomiled module available. You need to compile yourself
+raspbian 7 (wheezy) only provides v. 0.8
+takes quite a long time
 
-	set LabelText to desired language.
-	  LabelTextDE ... dictionary for german labels
-	  LabelTextEN ... dictionary for english labels
-	  set 'LabelText' to either dictionary
-		 e.g. LabelText = LabelTextEN
+If memory is < 1GB, temporarily increase temp mem with swap file
+e.g.: Raspberry Model B Revision 2.0
+```
+sudo mkdir /home/swap
+sudo dd if=/dev/zero of=/home/swap/swap0 bs=1M count=512
+sudo chmod 0600 /home/swap/swap0 
+sudo mkswap /home/swap/swap0 
+sudo swapon /home/swap/swap0 
+```
 
-	DEG_C       ... dictionary for the thresholds. Change only if you have different thresholds
+Download software
+```
+wget https://pypi.python.org/packages/source/p/pandas/pandas-0.14.1.tar.gz
+```
+
+no compile; takes quite a long time to compile(more than 2h)
+```
+tar xzf pandas-0.14.1.tar.gz
+cd pandas-0.14.1
+python setup.py build
+  => pandas-0.14.1-py2.7-linux-armv6l.egg
+sudo python setup.py install
+```
+
+remove swap, if you needed it for compilation
+```
+sudo swapoff /home/swap/swap0 
+rm -rf /home/swap
+```
+* /usr/local/lib/python2.7/dist-packages/
+* pandas-0.14.1-py2.7-linux-armv6l.egg
+
+
+### configure script
+Set "DO_SCP=True", if png and image should be uploaded to your website.
+temporary files and png are removed after the upload, if you don't want to delete, set 
+KEEP_PNG and KEEP_TMP to False
+
+set LabelText to desired language.
+  LabelTextDE ... dictionary for german labels
+  LabelTextEN ... dictionary for english labels
+  set 'LabelText' to either dictionary
+	 e.g. LabelText = LabelTextEN
+
+DEG_C       ... dictionary for the thresholds. Change only if you have different thresholds
   
-  
-d) cron jobs
-	to daily update the png, create following cron job:
-	daily: plotStatistics.py -c -f
-	one on January 1st.: plotStatistics.py -l 1
 
-	
-e) manual jobs	
+### set up cron jobs
+to daily update the png, create following cron job:
+daily: plotStatistics.py -c -f
+one on January 1st.: plotStatistics.py -l 1
 
+Before you add the cronjob, try to run the script manually
+```
+15 00   1 1 *   wospi  cd ~/wetter && python plotStatistics.py -l 1 -i y  >> /var/log/wospi/plotStatistics.log 2>&1
+25 06   * * *   wospi  cd ~/wetter && python plotStatistics.py -c -f -i y >> /var/log/wospi/plotStatistics.log 2>&1
+```
+
+### configure Web layout
+
+For HTML table formating, you can use stats_addon.css or you have your own style sheet. 
+Only necessary, if you include YYYY.statistics.inc file into your web page.
+		
+		
+#--------------------------------------------------------
+
+
+
+## Example Charts
+
+* [Weather Statistics](http://www.lidauer.net/wetter/wxstats.shtml)
+
+## Author
+
+* **plix1014** - [plix1014](https://github.com/plix1014)
+
+
+## License
+
+This project is licensed under the Attribution-NonCommercial-ShareAlike 4.0 International License - see the [LICENSE.md](LICENSE.md) file for details
+
+
+## Acknowledgments
+
+### Usage example
 usage: plotStatistics.py -c|-l n  -i y|m
 
 		-c --current :	 current interval
@@ -89,23 +144,9 @@ usage: plotStatistics.py -c|-l n  -i y|m
 	year bevor last year (2015):
 		plotStatistics.py -l 2
 
-	actually, the 'm' for monthly is not really usefull now. You can ignore it
-
-f) Web 
-	For HTML table formating, you can use stats_addon.css or you have your own style sheet. Only necessary, if you include YYYY.statistics.inc
-	
-	e.g.: http://www.lidauer.net/wetter/wxstats.shtml
-		
-		
-g) Cron jobs
-	you can setup the jobs as you like it, but this are the jobs I suggest
-	# yearly job to finalize statistics of previous year
-	15 00   1 1 *   wospi  cd ~/wetter && python plotStatistics.py -l 1  > /var/log/plotStatistics.log 2>&1
-	# daily job. Best to run after 06:00 am
-	25 06   * * *   wospi  cd ~/wetter && python plotStatistics.py -c -f >> /var/log/plotStatistics.log 2>&1
 
 
-# Notes:
+### Notes:
  - script only uses celsius degrees. If you want the limits shown as fahrenheit
    you need to convert TICE,TFRE,TSUM,THEA,TDES,TTRO in the *.input file
  - definition of cold- ,hot-days, trop nights differ between countries
@@ -153,8 +194,4 @@ g) Cron jobs
 		4. run gnuplot
 		5. transfer include and png files
 
-
- Configuration options in config.py
-
- depends on:  WOSPi, numpy, pandas
 
