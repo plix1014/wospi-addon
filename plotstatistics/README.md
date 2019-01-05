@@ -124,7 +124,7 @@ This project is licensed under the Attribution-NonCommercial-ShareAlike 4.0 Inte
 ## Acknowledgments
 
 ### Usage example
-usage: plotStatistics.py -c|-l n  -i y|m
+  usage: plotStatistics.py -c|-l n  -i y|m
 
 		-c --current :	 current interval
 		-l --last    :	 last interval, n ... number of years back
