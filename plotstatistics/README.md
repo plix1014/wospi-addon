@@ -42,41 +42,43 @@ takes quite a long time
 If memory is < 1GB, temporarily increase temp mem with swap file
 e.g.: Raspberry Model B Revision 2.0
 ```bash
-sudo mkdir /home/swap
-sudo dd if=/dev/zero of=/home/swap/swap0 bs=1M count=512
-sudo chmod 0600 /home/swap/swap0 
-sudo mkswap /home/swap/swap0 
-sudo swapon /home/swap/swap0 
+$ sudo mkdir /home/swap
+$ sudo dd if=/dev/zero of=/home/swap/swap0 bs=1M count=512
+$ sudo chmod 0600 /home/swap/swap0 
+$ sudo mkswap /home/swap/swap0 
+$ sudo swapon /home/swap/swap0 
 ```
 
 Download software
 ```bash
-wget https://pypi.python.org/packages/source/p/pandas/pandas-0.14.1.tar.gz
+$ wget https://pypi.python.org/packages/source/p/pandas/pandas-0.14.1.tar.gz
 ```
 
 no compile; takes quite a long time to compile(more than 2h)
 ```bash
-tar xzf pandas-0.14.1.tar.gz
-cd pandas-0.14.1
-python setup.py build
-  => pandas-0.14.1-py2.7-linux-armv6l.egg
-sudo python setup.py install
+$ tar xzf pandas-0.14.1.tar.gz
+$ cd pandas-0.14.1
+$ python setup.py build
+#  => pandas-0.14.1-py2.7-linux-armv6l.egg
+$ sudo python setup.py install
 ```
 
 remove swap, if you needed it for compilation
 ```bash
-sudo swapoff /home/swap/swap0 
-rm -rf /home/swap
+$ sudo swapoff /home/swap/swap0 
+$ rm -rf /home/swap
+
+# Installation location/package
+# /usr/local/lib/python2.7/dist-packages/
+# pandas-0.14.1-py2.7-linux-armv6l.egg
 ```
-* /usr/local/lib/python2.7/dist-packages/
-* pandas-0.14.1-py2.7-linux-armv6l.egg
 
 
 ### configure script
 Set "DO_SCP=True", if png and image should be uploaded to your website.
 temporary files and png are removed after the upload, if you don't want to delete, set 
 ```python
-DO_SCP=True
+DO_SCP   = True
 KEEP_PNG = False
 KEEP_TMP = False
 ```
@@ -167,6 +169,7 @@ This project is licensed under the Attribution-NonCommercial-ShareAlike 4.0 Inte
 
   
 - short overview of the program logic
+```
 	 I. prepare pandas array
 		1. merge csv' from requested year to on file
 		2. load data into pandas array (all columns, although currently only outside temp is used)
@@ -198,5 +201,5 @@ This project is licensed under the Attribution-NonCommercial-ShareAlike 4.0 Inte
 		3. save monthy dataframe to html table
 		4. run gnuplot
 		5. transfer include and png files
-
+```
 
