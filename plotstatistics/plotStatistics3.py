@@ -67,6 +67,7 @@
 # Update:
 #    v1.1:     add 'fill' option
 #    v1.2:     fix getopts typo, change plotting of ice days, add dummy data for missing months
+#    v1.3:     changes for new pandas version (resample)
 #-------------------------------------------------------------------------------
 
 import os, sys, shutil, re
@@ -165,7 +166,7 @@ TRACE= True
 # keep png files after upload
 KEEP_PNG = True
 # keep temporary files
-KEEP_TMP = False
+KEEP_TMP = True
 # upload png and inc
 DO_SCP   = False
 
@@ -442,32 +443,46 @@ def rebuild_name(fin,key):
 
 
 def temp_stats(pdin,key,fromMonth,toMonth,do_fill):
-    """ calculate temperatur statistics per day and per month
+    """ calculate temperature statistics per day and per month
     """
-    print_dbg(True, 'INFO : calculating temperatur stats')
+    print_dbg(True, 'INFO : calculating temperature stats')
 
-    # get temperatur column
+    # get temperature column
     pd_temp  = pdin.iloc[:,[0]]
     FREQ = 'D'
-    print_dbg(DEBUG, "DEBUG: pandas temperatur dataframe end: \n%s" % (pd_temp.tail(3)))
+    print_dbg(DEBUG, "DEBUG: pandas temperature dataframe end: \n%s" % (pd_temp.tail(3)))
 
     # for calc. of the trope-night shift records between 18:00 - 06:00 to 00:00 - 12:00
     # need this for resampling
     # to have the required timerange within the same day
     # last night was a trope-night if between 06:00pm and 06:00am Tmin >= 20degC
     pdt = pd_temp.tshift(6, freq='H')
-    print_dbg(DEBUG, "DEBUG: pandas temperatur df tshift 6h: \n%s" % (pdt.tail(3)))
+    print_dbg(DEBUG, "DEBUG: pandas temperature df tshift 6h: \n%s" % (pdt.tail(3)))
 
-    # the temperatur we need to check is now between 00:00 and 12:00 noon
+    # the temperature we need to check is now between 00:00 and 12:00 noon
     # ignore everything outside, Tmin needs to be >= 20
     pdx = pdt.loc[(pdt.index.hour <= 12)]
 
 
     # resample to day and calc some basic stats
-    t_mean = pd_temp.resample(FREQ, how='mean')
-    t_max  = pd_temp.resample(FREQ, how='max')
-    t_min  = pd_temp.resample(FREQ, how='min')
-    t_min_n= pdx.resample(FREQ, how='min')
+    pd_ver = int(re.sub("\.","",pd.__version__))
+    if (pd_ver <= 141):
+        # old syntax
+        # numpy: 1.6.2
+        # pandas: 0.14.1
+        t_mean = pd_temp.resample(FREQ, how='mean')
+        t_max  = pd_temp.resample(FREQ, how='max')
+        t_min  = pd_temp.resample(FREQ, how='min')
+        t_min_n= pdx.resample(FREQ, how='min')
+
+    else:
+        # PLI new syntax
+        # numpy: 1.12.1
+        # pandas: 0.19.2
+        t_mean = pd_temp.resample(FREQ).mean()
+        t_max  = pd_temp.resample(FREQ).max()
+        t_min  = pd_temp.resample(FREQ).min()
+        t_min_n= pdx.resample(FREQ).min()
 
     # drop last record for trope-night; due to timeshift before
     if len(t_min) < len(t_min_n):
@@ -479,8 +494,8 @@ def temp_stats(pdin,key,fromMonth,toMonth,do_fill):
     tx_mean = t_mean.rename (columns={'outside_air_temp': '_03temp_mean'})
     tx_trop = t_min_n.rename(columns={'outside_air_temp': '_09temp_trope'})
 
-    print_dbg(DEBUG, "DEBUG: pandas temperatur tx_mean: \n%s" % (tx_mean.tail(3)))
-    print_dbg(DEBUG, "DEBUG: pandas temperatur tx_trop: \n%s" % (tx_trop.tail(3)))
+    print_dbg(DEBUG, "DEBUG: pandas temperature tx_mean: \n%s" % (tx_mean.tail(3)))
+    print_dbg(DEBUG, "DEBUG: pandas temperature tx_trop: \n%s" % (tx_trop.tail(3)))
 
     # create new dataframe
     temp_df = pd.concat([tx_min, tx_max, tx_mean, tx_trop], axis=1)
@@ -489,9 +504,15 @@ def temp_stats(pdin,key,fromMonth,toMonth,do_fill):
     isTrue = lambda x:int(x==True)
     isNeg  = lambda x:int(x < 0)
 
+    # replace NaN by '0';
+    # needed if you provide the 'f' commandline parameter
+    # because future values are generated with NaN
+    temp_df.fillna(0, inplace=True)
+
     # add additional stats rows
     temp_df['_04t_ice'   ] = np.sign(temp_df._02temp_max)
     temp_df['_05t_frost' ] = np.sign(temp_df._01temp_min)
+
     temp_df['_06t_summer'] = temp_df.apply(lambda e: e._02temp_max   >= DEG_C['_06t_summer'], axis=1)
     temp_df['_07t_hot'   ] = temp_df.apply(lambda e: e._02temp_max   >= DEG_C['_07t_hot'   ], axis=1)
     temp_df['_08t_desert'] = temp_df.apply(lambda e: e._02temp_max   >= DEG_C['_08t_desert'], axis=1)
@@ -533,16 +554,35 @@ def temp_stats(pdin,key,fromMonth,toMonth,do_fill):
     #---------------------------------------------------------------------
 
     # create monthly stats
-    m_df  = temp_df.resample('MS', how={'_01temp_min' :'min',
-                                        '_02temp_max' :'max',
-                                        '_03temp_mean':'mean',
-                                        '_04t_ice'    :'sum',
-                                        '_05t_frost'  :'sum',
-                                        '_06t_summer' :'sum',
-                                        '_07t_hot'    :'sum',
-                                        '_08t_desert' :'sum',
-                                        '_09t_trope'  :'sum'
-                                    })
+    if (pd_ver <= 141):
+        # old syntax
+        # numpy: 1.6.2
+        # pandas: 0.14.1
+        m_df  = temp_df.resample('MS', how={'_01temp_min' :'min',
+                                            '_02temp_max' :'max',
+                                            '_03temp_mean':'mean',
+                                            '_04t_ice'    :'sum',
+                                            '_05t_frost'  :'sum',
+                                            '_06t_summer' :'sum',
+                                            '_07t_hot'    :'sum',
+                                            '_08t_desert' :'sum',
+                                            '_09t_trope'  :'sum'
+                                        })
+
+    else:
+        # PLI new syntax
+        # numpy: 1.12.1
+        # pandas: 0.19.2
+        m_df  = temp_df.resample('MS').agg({'_01temp_min' :'min',
+                                            '_02temp_max' :'max',
+                                            '_03temp_mean':'mean',
+                                            '_04t_ice'    :'sum',
+                                            '_05t_frost'  :'sum',
+                                            '_06t_summer' :'sum',
+                                            '_07t_hot'    :'sum',
+                                            '_08t_desert' :'sum',
+                                            '_09t_trope'  :'sum'
+                                        })
 
     d_min    = "%.2f" % m_df._01temp_min.min()
     d_max    = "%.2f" % m_df._02temp_max.max()
@@ -770,6 +810,7 @@ def main():
     # fill month records with empty data
     if has_cmdf:
         toMonth   = 12
+        toDay     = 31
         key       = str(fromYear)
 
     print_dbg(True, "INFO : plotinterval: %s.%s.%s - %s.%s.%s" \
