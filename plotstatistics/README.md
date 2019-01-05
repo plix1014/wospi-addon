@@ -15,8 +15,8 @@ plot historical temperatur stats
 
 copy files to your wospi installation.
 
-e.g.: /home/wospi/weather/
-```
+e.g.: `/home/wospi/weather/`
+```bash
 cp plotStatistics.py /home/wospi/weather
 cp plottemp_year.input/home/wospi/weather
 ```
@@ -25,12 +25,12 @@ cp plottemp_year.input/home/wospi/weather
 
 #### install numpy
 
-```
+```bash
 sudo apt-get install python-numpy
 ```
 
 #### install dev libs
-```
+```bash
 sudo apt-get install python-dev
 ```
 
@@ -41,7 +41,7 @@ takes quite a long time
 
 If memory is < 1GB, temporarily increase temp mem with swap file
 e.g.: Raspberry Model B Revision 2.0
-```
+```bash
 sudo mkdir /home/swap
 sudo dd if=/dev/zero of=/home/swap/swap0 bs=1M count=512
 sudo chmod 0600 /home/swap/swap0 
@@ -50,12 +50,12 @@ sudo swapon /home/swap/swap0
 ```
 
 Download software
-```
+```bash
 wget https://pypi.python.org/packages/source/p/pandas/pandas-0.14.1.tar.gz
 ```
 
 no compile; takes quite a long time to compile(more than 2h)
-```
+```bash
 tar xzf pandas-0.14.1.tar.gz
 cd pandas-0.14.1
 python setup.py build
@@ -64,7 +64,7 @@ sudo python setup.py install
 ```
 
 remove swap, if you needed it for compilation
-```
+```bash
 sudo swapoff /home/swap/swap0 
 rm -rf /home/swap
 ```
@@ -75,16 +75,23 @@ rm -rf /home/swap
 ### configure script
 Set "DO_SCP=True", if png and image should be uploaded to your website.
 temporary files and png are removed after the upload, if you don't want to delete, set 
-KEEP_PNG and KEEP_TMP to False
+```python
+DO_SCP=True
+KEEP_PNG = False
+KEEP_TMP = False
+```
 
-set LabelText to desired language.
-  LabelTextDE ... dictionary for german labels
-  LabelTextEN ... dictionary for english labels
-  set 'LabelText' to either dictionary
-	 e.g. LabelText = LabelTextEN
+```python
+# set LabelText to desired language.
+#   LabelTextDE ... dictionary for german labels
+#   LabelTextEN ... dictionary for english labels
+#   set 'LabelText' to either dictionary
+# 	 e.g. LabelText = LabelTextEN
+LabelText = LabelTextEN
 
-DEG_C       ... dictionary for the thresholds. Change only if you have different thresholds
-  
+#   DEC_C    ... dictionary for the thresholds. Change only if you have different thresholds
+DEG_C
+```  
 
 ### set up cron jobs
 to daily update the png, create following cron job:
@@ -99,14 +106,10 @@ Before you add the cronjob, try to run the script manually
 
 ### configure Web layout
 
-For HTML table formating, you can use stats_addon.css or you have your own style sheet. 
-Only necessary, if you include YYYY.statistics.inc file into your web page.
+For HTML table formating, you can use `stats_addon.css` or you have your own style sheet. 
+Only necessary, if you include `YYYY.statistics.inc` file into your web page.
 		
 		
-#--------------------------------------------------------
-
-
-
 ## Example Charts
 
 * [Weather Statistics](http://www.lidauer.net/wetter/wxstats.shtml)
@@ -124,6 +127,8 @@ This project is licensed under the Attribution-NonCommercial-ShareAlike 4.0 Inte
 ## Acknowledgments
 
 ### Usage example
+
+```bash
   usage: plotStatistics.py -c|-l n  -i y|m
 
 		-c --current :	 current interval
@@ -142,10 +147,11 @@ This project is licensed under the Attribution-NonCommercial-ShareAlike 4.0 Inte
 		
 	year bevor last year (2015):
 		plotStatistics.py -l 2
-
+```
 
 
 ### Notes:
+
  - script only uses celsius degrees. If you want the limits shown as fahrenheit
    you need to convert TICE,TFRE,TSUM,THEA,TDES,TTRO in the *.input file
  - definition of cold- ,hot-days, trop nights differ between countries
@@ -160,7 +166,7 @@ This project is licensed under the Attribution-NonCommercial-ShareAlike 4.0 Inte
 
 
   
- short overview of the program logic
+- short overview of the program logic
 	 I. prepare pandas array
 		1. merge csv' from requested year to on file
 		2. load data into pandas array (all columns, although currently only outside temp is used)
