@@ -18,7 +18,6 @@ copy files to your wospi installation.
 e.g.: /home/wospi/weather/
 ```
 cp plotStatistics.py /home/wospi/weather
-cp plottemp_chart.input /home/wospi/weather
 cp plottemp_year.input/home/wospi/weather
 ```
 
