@@ -50,6 +50,8 @@
 #	4. run gnuplot
 #	5. transfer include and png files
 #
+# IV. same for rain statistics
+#
 #
 # Configuration options in config.py
 #
@@ -68,6 +70,7 @@
 #    v1.1:     add 'fill' option
 #    v1.2:     fix getopts typo, change plotting of ice days, add dummy data for missing months
 #    v1.3:     changes for new pandas version (resample)
+#    v1.4:     add rainstatistics
 #-------------------------------------------------------------------------------
 
 import os, sys, shutil, re
@@ -75,24 +78,35 @@ import time, string
 import getopt
 from datetime import date, timedelta, datetime
 from config import TMPPATH, HOMEPATH, CSVPATH, CSVFILESUFFIX, SCPTARGET
-import subprocess
 
 # numpy and panda for data structure
 import pandas as pd
 import numpy as np
+
+# from local module
+from pywxtools import jump_by_month, print_dbg, stripNL, runGnuPlot, uploadPNG, uploadAny
 
 #-------------------------------------------------------------------------------
 
 
 # temp files for processing
 statdata   = TMPPATH + 'plotstatistics.tmp'
+statdata_r = TMPPATH + 'plotrainstatistics.tmp'
 statout_d  = TMPPATH + 'statistics_daily.csv'
+statout_dr = TMPPATH + 'statistics_daily_rain.csv'
 statout_m  = TMPPATH + 'statistics_month.csv'
+statout_mr = TMPPATH + 'statistics_month_rain.csv'
+
 # outfile for SSI
 statout_h  = TMPPATH + 'statistics.inc'
+statout_hr = TMPPATH + 'statistics_rain.inc'
+
 # labels for plot file
 labelfile  = TMPPATH + 'labels.tmp'
+labelfile_r = TMPPATH + 'labels_rain.tmp'
 
+# rain suffix
+RAINSUFFIX='rain'
 
 # German labels
 # see https://www.dwd.de/DE/service/lexikon/Functions/glossar.html?nn=103346&lv2=101334&lv3=101452
@@ -111,6 +125,17 @@ LabelTextDE = {
  '_09t_trope'  : 'Tropennaechte'
 }
 
+LabelTextDE_Rain = {
+ '_001xtitle'  : 'TEMPERATUR Statistik für',
+ '_002ylabel'  : 'Anzahl der Tage',
+ '_01rain_days'        :'Regentage',
+ '_02daily_rain_max'   :'Tagesmaximum',
+ '_03daily_rain_avg'   :'Tagesdurchschnitt pro Monat',
+ '_04monthly_rain_max' :'Monatsniederschlag',
+ '_05yearly_rain_max'  :'mm seit Jahresbeginn',
+ '_06yearly_rain_mean' :'Monatsdurchschnitt'
+}
+
 # English labels
 LabelTextEN = {
  '_001xtitle'  : 'TEMPERATURE statistics for',
@@ -126,8 +151,20 @@ LabelTextEN = {
  '_09t_trope'  : 'Trop nights'
 }
 
+LabelTextEN_Rain = {
+ '_001xtitle'  : 'TEMPERATURE statistics for',
+ '_002ylabel'  : 'Number of Days',
+ '_01rain_days'        :'Raindays',
+ '_02daily_rain_max'   :'Daily Max',
+ '_03daily_rain_avg'   :'Daily average per Month',
+ '_04monthly_rain_max' :'Monathly Rain',
+ '_05yearly_rain_max'  :'mm since BOY',
+ '_06yearly_rain_mean' :'Monthy average'
+}
+
 # set to desired language
 LabelText = LabelTextEN
+LabelTextR = LabelTextEN_Rain
 
 
 # Celsius temperature limits
@@ -171,141 +208,13 @@ KEEP_TMP = True
 DO_SCP   = False
 
 #-------------------------------------------------------------------------------
-def jump_by_month(start_date, end_date, month_step=1):
-    """ iterate through date by month increments
-        https://stackoverflow.com/questions/153584/how-to-iterate-over-a-timespan-after-days-hours-weeks-and-months-in-python
-    """
-    current_date = start_date
-    while current_date < end_date:
-        yield current_date
-        carry, new_month = divmod(current_date.month - 1 + month_step, 12)
-        new_month += 1
-        current_date = current_date.replace(year=current_date.year + carry, month=new_month)
 
 
-def print_dbg(level,msg):
-    now = time.strftime('%a %b %d %H:%M:%S %Y LT:')
-    if level:
-        print("%s %s" % (now,msg))
-    return
-
-def stripNL(text):
-    """ remove the newline from the end of the string
-    """
-    try:
-        return float(text.strip())
-    except AttributeError:
-        return float(text)
-
-def uploadAny(inFile, DO_SCP=True, KEEP_IN=False):
-    """ copies the any file to the website
-    """
-
-    SCPCOMMAND_PLOTINT = 'scp -o ConnectTimeout=12 %s %s' % (inFile, SCPTARGET)
-
-    if DO_SCP:
-        try:
-            print_dbg(True, 'INFO : uploading %s.' % (inFile))
-            os.system(SCPCOMMAND_PLOTINT)
-
-        except Exception as e:
-            print_dbg(True, 'ERROR: upload %s: %s.' % (inFile,e))
-
-    if not KEEP_IN:
-        if (os.path.isfile(inFile)):
-            os.unlink(inFile)
-        else:
-            print_dbg(True, 'ERROR: cannot delete %s.' % (inFile))
-
-    return
-
-def uploadPNG(png, DO_SCP=True, KEEP_PNG=False):
-    """ copies the png file to the website
-    """
-
-    SCPCOMMAND_PLOTINT = 'scp -o ConnectTimeout=12 %s %s' % (png, SCPTARGET)
-
-    if DO_SCP:
-        try:
-            print_dbg(True, 'INFO : uploading %s.' % (png))
-            os.system(SCPCOMMAND_PLOTINT)
-
-        except Exception as e:
-            print_dbg(True, 'ERROR: upload png %s: %s.' % (png,e))
-
-    if not KEEP_PNG:
-        if (os.path.isfile(png)):
-            os.unlink(png)
-        else:
-            print_dbg(True, 'ERROR: cannot delete %s.' % (png))
-
-    return
-
-def runGnuPlot(plt, KEEP_TMP=False, LEVEL1=False, LEVEL2=False):
-    """ run gnuplot
-        TODO: parse output
-    """
-    # full error message
-    re_stderr = re.compile(r'^.*,\s+(line\s+\d+):\s+(.*)')
-    el = 0
-
-    inFile = TMPPATH + 'plot' + plt + '.plt'
-
-    gnuplot = '/usr/bin/gnuplot'
-
-    if os.path.exists(gnuplot):
-        print_dbg(LEVEL1,"runGnuPlot: plot png " + plt)
-        try:
-            proc_out = subprocess.Popen([gnuplot, inFile], stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-
-            output = proc_out.stdout.readlines()
-            outerr = proc_out.stderr.readlines()
-
-            for line in outerr:
-                m = re.search(re_stderr, line.strip())
-                if m:
-                    print_dbg(True, "STDERR: %s" % line.strip())
-                    if re.search("warning:",line):
-                        # we ignore warning errors
-                        pass
-                    else:
-                        raise ValueError('syntax or plot error in gnuplot file')
-                    el = 1
-
-            if LEVEL2:
-                for n in output:
-                    print_dbg(True, "STDOUT: %s" % n.strip())
-                for n in outerr:
-                    print_dbg(True, "STDERR: %s" % n.strip())
-
-        except Exception as e:
-            print_dbg(True, 'WARN : GnuPlot done with exception(s): %s.' % e)
-            el = 1
-
-    else:
-        print_dbg(True,"ERROR: gnuplot command '%s' not found." % gnuplot)
-        el = 1
-
-    # cleanup temp files
-    if not KEEP_TMP:
-        if (os.path.isfile(inFile)):
-            os.unlink(inFile)
-
-        tmpFile = TMPPATH + 'plot' + plt + '.tmp'
-        if (os.path.isfile(tmpFile)):
-            os.unlink(tmpFile)
-        else:
-            print_dbg(LEVEL1,"tmp file not found: %s" % tmpFile)
-
-    return el
-
-
-#-------------------------------------------------------------------------------
 def prepareCSVData(fromMonth,fromYear, tmpfile):
     """ merging csv files from YYYMM to current month
     """
 
-    print_dbg(True, 'INFO : preparing CSV file')
+    print_dbg(True, 'INFO : preparing temp CSV file')
 
     # get date to read the current csv
     YYMM = '%s' % time.strftime('%Y-%m')
@@ -361,6 +270,73 @@ def prepareCSVData(fromMonth,fromYear, tmpfile):
         print_dbg(DEBUG, "DEBUG: YYMM (%s) == fromYYMM (%s)" % (YYMM,fromYYMM))
         print_dbg(True, "INFO : creating tmpcsv from %s" % YYMM)
         shutil.copyfile(WX,tmpfile)
+
+    return
+
+
+def prepareCSVDataRain(fromMonth,fromYear, tmpfile):
+    """ merging rain csv files from YYYMM to current month
+        DAY         DD   MM   YY
+        04.05.2019, 0.2, 3.2, 80.4
+    """
+
+    print_dbg(True, 'INFO : preparing rain CSV file')
+
+    # get date to read the current csv
+    YYMM = '%s' % time.strftime('%Y-%m')
+    RX   = CSVPATH + YYMM + "." + RAINSUFFIX
+
+    # get name for previous csv
+    fromYYMM = str(fromYear) + '-' + str(fromMonth).zfill(2)
+
+    # remove existing temp file
+    if (os.path.isfile(tmpfile)):
+        os.unlink(tmpfile)
+
+    start = date( year = fromYear, month = fromMonth, day = 1 )
+    end   = date.today()
+
+    print_dbg(DEBUG, "DEBUG: start: %s" % (start))
+    print_dbg(DEBUG, "DEBUG: end  : %s" % (end))
+
+    if (YYMM <> fromYYMM):
+        print_dbg(DEBUG, "DEBUG: YYMM (%s) <> fromYYMM (%s)" % (YYMM,fromYYMM))
+        # to add dummy data for missing months, now open target file inside the loop
+
+        for dv in jump_by_month( start, end ):
+            curYYMM = str(dv)[:7]
+            RXcur = CSVPATH + curYYMM + "." + RAINSUFFIX
+            if (os.path.isfile(RXcur)):
+                print_dbg(DEBUG, "DEBUG merging %s" % curYYMM)
+                rx  = open(tmpfile, 'ab')
+                rxc = open(RXcur,'rb')
+                shutil.copyfileobj(rxc, rx)
+                rxc.close()
+                rx.close()
+            else:
+                # if year does not start in january (because you started with this project later)
+                # it also plots january for the next year, which doesn't look pretty.
+                # the reason seems to be the calculation of the trope nights because I shift the night
+                # data to the next day.
+                # the year is correctly plotted, if I add this monthly dummy line for the year, where you
+                # started with wospi.
+                # until I have a better solution (clipping the data for the next year after trope night calc,
+                # I'll keep this workaround here. It works for my environment, hope, it works for yours aswell.
+                # you can test be behaviour if you comment the "rx.write(...)" line below
+                print_dbg(True, "WARN : missing data for %s" % curYYMM)
+                curYY = str(dv)[:4]
+                curMM = str(dv)[6:7].zfill(2)
+                print_dbg(True, "WARN : adding dummy line for %s.%s" % (curMM,curYY))
+                rx = open(tmpfile,'ab')
+                #         04.05.2019, 0.2, 3.2, 80.4
+                rx.write('01.%s.%s,0.0,0.0,0.0\n' % (curMM,curYY))
+                rx.close()
+
+
+    else:
+        print_dbg(DEBUG, "DEBUG: YYMM (%s) == fromYYMM (%s)" % (YYMM,fromYYMM))
+        print_dbg(True, "INFO : creating tmpcsv from %s" % YYMM)
+        shutil.copyfile(RX,tmpfile)
 
     return
 
@@ -430,6 +406,57 @@ def read_wx_csv(wxin,fromDay,fromMonth,fromYear,fromHour,toDay,toMonth,toYear, d
     return plotdata
 
 
+def read_rx_csv(rxin,fromDay,fromMonth,fromYear,fromHour,toDay,toMonth,toYear, do_fill):
+    """ read rxdata into pandas dataformat
+    """
+
+    print_dbg(True, 'INFO : building DataFrame')
+
+    # sample data
+    # 04.05.2019, 0.2, 3.2, 80.4
+
+    # read all csv fields
+    data = pd.read_csv(rxin, header=None, converters = {4 : stripNL})
+
+    # fill future month records with empty data
+    # to have a even plotted chart (needs commandline option 'f')
+    if do_fill:
+        fillMonth = datetime.now().month + 1
+        print_dbg(True, "INFO : fill future months with empty data (%s - 12)" % fillMonth)
+        for n in range(fillMonth,13):
+            future_date  = '01.' + str(n).zfill(2) + '.' + str(toYear)
+            data.loc[-1] = [future_date,0.0,0.0,0.0]  # adding a row
+            data.index   = data.index + 1  # shifting index
+            print_dbg(DEBUG, "DEBUG: added fill data for date %s" % future_date)
+
+
+    # rename columns
+    data.rename(columns={ 0: 'timestamp',
+                          1: 'rain_dd',
+                          2: 'rain_mm',
+                          3: 'rain_yy'}, inplace=True)
+
+    # convert date string field to datetime
+    data['timestamp'] = pd.to_datetime(data['timestamp'], format = '%d.%m.%Y')
+
+    start_date = "%s-%s-%s" % (fromYear,str(fromMonth).zfill(2),str(fromDay).zfill(2))
+    end_date   = "%s-%s-%s" % (toYear,  str(toMonth).zfill(2),  str(toDay).zfill(2))
+
+    # select only the data within the timerange
+    print_dbg(DEBUG, "DEBUG: mask = (data['timestamp'] >= %s) & (data['timestamp'] <= %s)" % (start_date,end_date))
+    mask = (data['timestamp'] >= start_date) & (data['timestamp'] <= end_date)
+    plotdata = data.loc[mask]
+
+    # use first col. as index
+    plotdata.set_index('timestamp', inplace=True)
+
+    if not KEEP_TMP:
+        if (os.path.isfile(rxin)):
+            os.unlink(rxin)
+
+    return plotdata
+
+
 def rebuild_name(fin,key):
     """ add year prefix to filename
     """
@@ -441,6 +468,185 @@ def rebuild_name(fin,key):
 
     return fout
 
+
+def rain_stats(pdin,key,fromMonth,toMonth,do_fill):
+    """ calculate rain statistics per day and per month
+        # 05.01.2019, 7.4, 9.4, 9.4
+        # 06.01.2019, 0.0, 9.4, 9.4
+        # 07.01.2019, 0.0, 9.4, 9.4
+        # 08.01.2019, 3.0, 12.4, 12.4
+    """
+    print_dbg(True, 'INFO : calculating rain stats')
+
+    # get rain columns
+
+    # month and year
+    pd_rain  = pdin.iloc[:,[1,2]]
+
+    # rain_dd
+    pd_rain_d  = pdin.iloc[:,[0]]
+
+    FREQ = 'M'
+
+    # resample to day and calc some basic stats
+    pd_ver = int(re.sub("\.","",pd.__version__))
+    if (pd_ver <= 141):
+        # old syntax
+        # numpy: 1.6.2
+        # pandas: 0.14.1
+        r_mean = pd_rain.resample(FREQ, how='mean')
+        r_max   = pd_rain.resample(FREQ, how='max')
+        r_max_d = pd_rain_d.resample(FREQ, how='max')
+        r_sum_d = pd_rain_d.resample(FREQ, how='sum')
+
+    else:
+        # PLI new syntax
+        # numpy: 1.12.1
+        # pandas: 0.19.2
+        r_mean = pd_rain.resample(FREQ).mean()
+        r_max   = pd_rain.resample(FREQ).max()
+        # max mm per day/month
+        r_max_d = pd_rain_d.resample(FREQ).max()
+        # r_sum_d = r_max = monthly rain
+        r_sum_d = pd_rain_d.resample(FREQ).sum()
+        r_sum_q = pd_rain_d.resample('Q').sum()
+        r_avg_m = pd_rain_d.resample(FREQ).mean()
+        #r_avg_m = r_sum_d.resample(FREQ).mean()
+
+
+    # number of rain days, avg mm/day (if raining)
+    r_nr_d  = pd_rain_d.mask(pd_rain_d.rain_dd.le(0.2)).groupby(pd.Grouper(freq='M')).count()
+    r_avg_d = pd_rain_d.mask(pd_rain_d.rain_dd.le(0.2)).groupby(pd.Grouper(freq='M')).mean()
+
+    r_avg_m = r_sum_d.rolling(window=2).mean()
+    r_avg_m.at[key+'-01-31','rain_dd'] = r_sum_d.ix[key+'-01-31','rain_dd']
+
+    for i in range(2,5):
+           r_avg_m['MA{}'.format(i)] = r_sum_d.rolling(window=i).mean()
+
+
+    rx_nr_d   = r_nr_d.rename  (columns={'rain_dd': '_01rain_days'})
+    rx_d_max  = r_max_d.rename (columns={'rain_dd': '_02daily_rain_max'})
+    rx_d_avg  = r_avg_d.rename (columns={'rain_dd': '_03daily_rain_avg'})
+
+    rx_max  = r_max.rename  (columns={'rain_mm': '_04monthly_rain_max' , 'rain_yy': '_05yearly_rain_max' })
+    rx_mean = r_mean.rename (columns={'rain_mm': '_07monthly_rain_mean', 'rain_yy': '_06yearly_rain_mean'})
+
+    # we don't need _07month...
+    rx_mean_y  = rx_mean.iloc[:,[1]]
+
+
+    print_dbg(DEBUG, "DEBUG: pandas rain r_sum_d  : \n%s" % (r_sum_d))
+    print_dbg(DEBUG, "DEBUG: pandas rain r_sum_q  : \n%s" % (r_sum_q))
+    print_dbg(DEBUG, "DEBUG: pandas rain r_avg_d  : \n%s" % (r_avg_d))
+    print_dbg(DEBUG, "DEBUG: pandas rain r_avg_m  : \n%s" % (r_avg_m))
+
+    # create new dataframe
+    rain_df = pd.concat([rx_nr_d, rx_d_max, rx_d_avg, rx_max, rx_mean_y], axis=1)
+    print_dbg(DEBUG, "DEBUG: pandas rain rain_df: \n%s" % (rain_df))
+
+    # replace NaN by '0';
+    # needed if you provide the 'f' commandline parameter
+    # because future values are generated with NaN
+    rain_df.fillna(0, inplace=True)
+
+    # create monthly stats
+    if (pd_ver <= 141):
+        # old syntax
+        # numpy: 1.6.2
+        # pandas: 0.14.1
+        m_df  = rain_df.resample('MS', how={'_01rain_days'        :'sum',
+                                            '_02daily_rain_max'   :'max',
+                                            '_03daily_rain_avg'   :'mean',
+                                            '_04monthly_rain_max' :'max',
+                                            '_05yearly_rain_max'  :'max',
+                                            '_06yearly_rain_mean' :'mean'
+                                        })
+
+    else:
+        # PLI new syntax
+        # numpy: 1.12.1
+        # pandas: 0.19.2
+        m_df  = rain_df.resample('MS').agg({'_01rain_days'        :'sum',
+                                            '_02daily_rain_max'   :'max',
+                                            '_03daily_rain_avg'   :'mean',
+                                            '_04monthly_rain_max' :'max',
+                                            '_05yearly_rain_max'  :'max',
+                                            '_06yearly_rain_mean' :'mean'
+                                        })
+
+    m_df['_06yearly_rain_mean'] = m_df._06yearly_rain_mean.apply(lambda x: '-')
+    print_dbg(DEBUG, "DEBUG: pandas rain m_df: \n%s" % (m_df))
+
+    dd_sum    = "%.2f" % m_df._01rain_days.sum()
+    dd_max    = "%.2f" % m_df._02daily_rain_max.max()
+    dd_mean   = "%.2f" % m_df._03daily_rain_avg.mean()
+
+    dm_max    = "%.2f" % m_df._04monthly_rain_max.max()
+
+    dy_mean   = "%.2f" % m_df._04monthly_rain_max.mean()
+    dy_max    = "%.2f" % m_df._05yearly_rain_max.max()
+
+    if TRACE:
+        print_dbg(True, "INFO : Raindays   : %s" % dd_sum)
+        print_dbg(True, "INFO : max Day    : %s" % dd_max)
+        print_dbg(True, "INFO : max Month  : %s" % dm_max)
+        print_dbg(True, "INFO : mm/Year    : %s" % dy_max)
+
+    # sort indices
+    m_df.sort_index(axis=1, inplace=True)
+
+    # rename sort header to usable names
+    m_df.rename(columns=LabelTextR, inplace=True)
+
+    # write daily and monthly stats to file
+    out_m = rebuild_name(statout_mr,key)
+
+    # save csv for plotting
+    rain_df.to_csv(statout_dr)
+    m_df.to_csv(out_m)
+
+    if do_fill:
+        fillMonth = datetime.now().month
+        # now dropping the additional records which we have added before
+        for n in range(toMonth,fillMonth,-1):
+            print_dbg(DEBUG, 'DEBUG: removing empty month: n %s' % (n))
+            m_df = m_df[:-1]
+
+
+    df_col = ['timestamp']
+    iterlabel = iter(sorted(LabelTextR))
+    next(iterlabel)
+    next(iterlabel)
+    for n in iterlabel:
+        df_col.append(LabelTextR[n])
+
+
+    sum_val = [key + '-12-31',dd_sum,dd_max,dd_mean,dm_max,dy_max,dy_mean]
+
+    # build new index names
+    new_idx_names = []
+    old_idx_names = m_df.index
+    for n in range(len(m_df.index)):
+        mon = old_idx_names[n].month
+        new_idx_names.append(months[mon])
+
+
+    new_idx_names.append(key)
+
+    try:
+        sum_df = pd.DataFrame([sum_val],columns=df_col)
+        sum_df.set_index('timestamp', inplace=True)
+
+        mx_df = pd.concat([m_df, sum_df])
+        mx_df.index = new_idx_names
+    except Exception as e:
+        print_dbg(True, 'ERROR: exception(s) when creating sum: %s.' % e)
+
+
+    return mx_df
+
+#------------------------------------------------------------------------------------------------------------
 
 def temp_stats(pdin,key,fromMonth,toMonth,do_fill):
     """ calculate temperature statistics per day and per month
@@ -646,27 +852,40 @@ def temp_stats(pdin,key,fromMonth,toMonth,do_fill):
     return mx_df
 
 
-def save_html(df,key):
+def save_html(df,key,tm):
     """ save table as html include (SSI)
     """
-    out = rebuild_name(statout_h,key)
+    if tm == 't':
+        sout = statout_h
+    else:
+        sout = statout_hr
+
+    out = rebuild_name(sout,key)
 
     with open(out, 'w') as f:
         f.write(df.to_html(header=True,classes='df',float_format=lambda x: '%10.2f' % x))
         f.close()
 
     uploadAny(out, DO_SCP, KEEP_TMP)
+    return
 
 
-def save_labels(year):
+def save_labels(year,tm):
     """ save labels to file to support
         languages without changing the gnuplot file
     """
-    st = open(labelfile, 'w')
+    if tm == 't':
+        lf = labelfile
+        lt = LabelText
+    else:
+        lf = labelfile_r
+        lt = LabelTextR
+
+    st = open(lf, 'w')
     st.write(year+'\n')
 
-    for n in sorted(LabelText.keys()):
-        rec = LabelText[n]
+    for n in sorted(lt.keys()):
+        rec = lt[n]
 
         if (n in DEG_C.keys()):
             rec += ';'+ str(DEG_C[n])
@@ -677,7 +896,7 @@ def save_labels(year):
     return
 
 
-def plotStatistics(plt):
+def plotStatistics(plt,tm):
     """ create plot file from template and start gnuplot
     """
     inFile  = HOMEPATH + 'plot' + plt + '.input'
@@ -693,8 +912,13 @@ def plotStatistics(plt):
     # PLI
     #
     if not KEEP_TMP:
-        if (os.path.isfile(labelfile)):
-            os.unlink(labelfile)
+        if tm == 't':
+            lf = labelfile
+        else:
+            lf = labelfile_r
+
+        if (os.path.isfile(lf)):
+            os.unlink(lf)
 
     return
 
@@ -817,7 +1041,8 @@ def main():
             % (str(fromDay).zfill(2),str(fromMonth).zfill(2),fromYear,str(toDay).zfill(2),str(toMonth).zfill(2),toYear))
 
     # save year and other labels for gnuplot file
-    save_labels(key)
+    save_labels(key,'t')
+    save_labels(key,'r')
 
 
     try:
@@ -825,19 +1050,33 @@ def main():
         wr = read_wx_csv(statdata,fromDay,fromMonth,fromYear,'00',toDay,toMonth,toYear,has_cmdf)
 
         df = temp_stats(wr,key,fromMonth,toMonth,has_cmdf)
-        save_html(df, key)
+        save_html(df, key,'t')
 
         pkey = 'temp_year'
-        plotStatistics(pkey)
+        plotStatistics(pkey,'t')
         uploadPNG(TMPPATH  + 'plottemp_' + key + '.png', DO_SCP, KEEP_PNG)
 
+        prepareCSVDataRain(fromMonth,fromYear, statdata_r)
+        wr_r = read_rx_csv(statdata_r,fromDay,fromMonth,fromYear,'00',toDay,toMonth,toYear,has_cmdf)
+
+        df_r = rain_stats(wr_r,key,fromMonth,toMonth,has_cmdf)
+        save_html(df_r, key,'r')
+
+        pkey = 'monthlyrain'
+        plotStatistics(pkey,'t')
+        uploadPNG(TMPPATH  + 'monthlyrain_' + key + '.png', DO_SCP, KEEP_PNG)
         if not KEEP_TMP:
             if (os.path.isfile(statout_d)):
                 os.unlink(statout_d)
-            out_m = rebuild_name(statout_m,key)
+            if (os.path.isfile(statout_dr)):
+                os.unlink(statout_dr)
+            out_m  = rebuild_name(statout_m,key)
+            out_mr = rebuild_name(statout_mr,key)
             print_dbg(DEBUG,"DEBUG: remove " + out_m)
             if (os.path.isfile(out_m)):
                 os.unlink(out_m)
+            if (os.path.isfile(out_mr)):
+                os.unlink(out_mr)
 
 
     except Exception as e:

@@ -1,0 +1,80 @@
+# PLOT Precipitation PER MONTH
+#
+# Rev. 20150701/TMJ  -  tmj@bitwrap.no
+# http://annoyingdesigns.com
+#
+
+# file variables
+isdos = system("ls /tmp 2>&1 |grep -c No")
+
+if (isdos == 1) {
+  tmpdir  = 'c:/Users/WRZLPE/Documents/peter/dev/wos/tmp/'
+} else {
+  tmpdir  = '/var/tmp/'
+}
+year    = system("head -1 ".tmpdir."labels_rain.tmp")
+datain  = tmpdir . year . '.statistics_month_rain.csv'
+dataout = tmpdir . 'monthlyrain_' . year . '.png'
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
+# Scale Y2 axis for mm rain with padding space
+set terminal unknown
+set xdata time
+set timefmt '%Y-%m'
+set datafile separator ','
+set style histogram
+
+plot datain using 1:5 with boxes lc rgb 'steelblue', \
+     '' using 1:5:5 with labels textcolor rgb 'black' center offset 0,0.6 notitle
+
+# add y-offset
+n10_y = int(GPVAL_DATA_Y_MAX) / 10
+max_y = n10_y * 10 + 10
+
+# plotrange +/- 15 days
+min_x = GPVAL_DATA_X_MIN - 86400*15
+max_x = GPVAL_DATA_X_MAX + 86400*15
+
+reset 
+
+set terminal png enhanced size 1080, 480
+set output dataout
+set xdata time
+set timefmt '%Y-%m'
+set datafile separator ','
+set style histogram
+set title sprintf("RAIN PER MONTH at Hollabrunn, Austria\n")
+
+YMIN = 0
+YMAX = max_y + 10
+
+set ylabel 'mm'
+set xlabel textcolor rgb 'red'
+set xlabel font 'Helvetica, 10'
+
+set xrange[min_x:max_x]
+
+set bmargin at screen 0.22
+set yrange[YMIN:YMAX]
+#set xtics rotate
+#set xtics font 'Helvetica, 12'
+set xtics nomirror
+
+#set mxtics 4
+set mytics 2
+
+#set grid mxtics mytics
+set grid
+set key off
+
+set format x '%b %Y'
+set style fill transparent solid 0.5 border -1
+
+set auto fix
+
+
+plot datain using 1:5 with boxes lc rgb 'steelblue', \
+     '' using 1:5:5 with labels textcolor rgb 'black' center offset 0,0.6 notitle
+
+

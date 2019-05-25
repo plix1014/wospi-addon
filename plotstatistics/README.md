@@ -1,6 +1,6 @@
 # plotstatistics
 
-plot historical temperatur stats
+plot historical temperatur and rain stats
 
 
 ### Prerequisites
@@ -18,7 +18,8 @@ copy files to your wospi installation.
 e.g.: `/home/wospi/weather/`
 ```bash
 cp plotStatistics.py /home/wospi/weather
-cp plottemp_year.input/home/wospi/weather
+cp plottemp_year.input /home/wospi/weather
+cp plotmonthlyrain.input /home/wospi/weather
 ```
 
 ### Python module installation
@@ -90,6 +91,7 @@ KEEP_TMP = False
 #   set 'LabelText' to either dictionary
 # 	 e.g. LabelText = LabelTextEN
 LabelText = LabelTextEN
+LabelTextR = LabelTextEN_Rain
 
 #   DEC_C    ... dictionary for the thresholds. Change only if you have different thresholds
 DEG_C
@@ -164,7 +166,7 @@ This project is licensed under the Attribution-NonCommercial-ShareAlike 4.0 Inte
            AT: Tmax >= 30°C
            US: Tmax >= 91°F = 32.8°C
 
- - set LabelText to desired language. This does not change the calculation
+ - set LabelText and LabelTextR to desired language. This does not change the calculation
 
 
   
@@ -201,5 +203,7 @@ This project is licensed under the Attribution-NonCommercial-ShareAlike 4.0 Inte
 		3. save monthy dataframe to html table
 		4. run gnuplot
 		5. transfer include and png files
+
+	 IV. same for rain statistics
 ```
 

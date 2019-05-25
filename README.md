@@ -10,7 +10,7 @@ This software reads the sensor data from the Davis Vantage/Vue weather station c
 plot sunrise, sunset and sunshine charts based on sensor data
 
 ### plotstatistics
-plot historical temperatur stats
+plot historical temperatur and rain stats
 
 
 ## Author
