@@ -71,6 +71,7 @@
 #    v1.2:     fix getopts typo, change plotting of ice days, add dummy data for missing months
 #    v1.3:     changes for new pandas version (resample)
 #    v1.4:     add rainstatistics
+#    v1.5:     add dropna() to fix the MinTemperatur during the current month
 #-------------------------------------------------------------------------------
 
 import os, sys, shutil, re
@@ -713,6 +714,7 @@ def temp_stats(pdin,key,fromMonth,toMonth,do_fill):
     # replace NaN by '0';
     # needed if you provide the 'f' commandline parameter
     # because future values are generated with NaN
+    temp_df.dropna(inplace=True)
     temp_df.fillna(0, inplace=True)
 
     # add additional stats rows
