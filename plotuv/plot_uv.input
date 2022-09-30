@@ -1,0 +1,177 @@
+# DAILY UV Index
+#
+# Rev. 20170910/PLI
+# based on script from tmj@bitwrap.no
+# http://annoyingdesigns.com
+#
+# file variables
+isdos = system("ls /tmp 2>&1 |grep -c No")
+
+if (isdos == 1) {
+  tmpdir  = 'c:/Users/WRZLPE/Documents/peter/dev/wos/tmp/'
+} else {
+  tmpdir  = '/var/tmp/'
+}
+year    = system("head -1 ".tmpdir."labels.tmp")
+datain  = tmpdir . 'stat_uv_daily.csv'
+datain2 = tmpdir . year . '.stat_uv_month.csv'
+dataout = tmpdir . 'plotuvindex_' . year . '.png'
+
+#
+#
+
+#--
+# DEBUG
+XTIT    = "UV Index statistics for"
+YLAB    = "UV Index"
+NOTE    = "Die Haut produziert erst ab einem UV-Index von 3 Vitamin D (UV-b)"
+
+set ytics 2
+
+set xdata time
+set timefmt '%Y-%m-%d'
+set datafile separator ','
+
+set yrange [0:15]
+
+
+# ----
+# getting stats
+
+set terminal unknown
+
+plot datain using 1:3 axis x1y1
+
+min_y = GPVAL_DATA_Y_MIN
+max_y = GPVAL_DATA_Y_MAX
+min_x = GPVAL_DATA_X_MIN
+max_x = GPVAL_DATA_X_MAX
+
+reset
+
+#-------------------------------------------------------
+#set terminal wxt size 800,400 enhanced font 'Verdana,10' persist
+set terminal png enhanced size 800,600 font 'Verdana,10'
+#set terminal png enhanced size 1080, 960
+set output dataout
+if (GPVAL_VERSION >= 5.0) {set colors classic}
+
+
+set yrange [0:15]
+set y2range [0:15]
+set xrange [min_x+1:max_x]
+
+
+set grid
+
+set tics font 'Verdana, 8'
+set ytics 2
+set y2tics 0,2
+
+set xdata time
+set timefmt '%Y-%m-%d'
+set datafile separator ','
+#set format x "KW %U"
+set format x "%m/%y"
+
+#set key invert reverse Left outside font "Courier New,11"
+set key invert reverse Left below
+#set key left top
+
+
+# tics only one per day
+#set xtics 60*60*24
+
+set xtics scale 3,2 rotate by 90
+set xtics out offset 0,-1.7
+set xtics nomirror
+#set xmtics
+set xtics add (min_x)
+
+set xlabel "Datum" offset 0,-0.5
+#set ylabel "UV Index"
+
+set ylabel sprintf("%s", YLAB)
+set title sprintf("%s %s", XTIT,year)
+#set title sprintf("PLOTTITLE\nTIMESTAMP")
+
+
+set style rect fc lt -1 fs solid 0.65 noborder
+
+set object 1 rect from min_x, 0 to max_x, 3 fc rgb "light-green"
+set object 2 rect from min_x, 3 to max_x, 6 fc rgb "khaki1"
+set object 3 rect from min_x, 6 to max_x, 8 fc rgb "sandybrown"
+set object 4 rect from min_x, 8 to max_x,11 fc rgb "salmon"
+set object 5 rect from min_x,11 to max_x,15 fc rgb "orchid"
+
+set style fill pattern 2 bo 1
+
+set arrow  1 from min_x, 1 to max_x, 1 nohead lt 0
+set arrow  2 from min_x, 2 to max_x, 2 nohead lt 0
+set arrow  3 from min_x, 4 to max_x, 4 nohead lt 0
+set arrow  4 from min_x, 5 to max_x, 5 nohead lt 0
+set arrow  5 from min_x+90, 7 to max_x, 7 nohead lt 0
+set arrow  6 from min_x, 9 to max_x, 9 nohead lt 0
+set arrow  7 from min_x,10 to max_x,10 nohead lt 0
+set arrow  8 from min_x,12 to max_x,12 nohead lt 0
+set arrow  9 from min_x,13 to max_x,13 nohead lt 0
+set arrow 10 from min_x,14 to max_x,14 nohead lt 0
+
+set arrow 11 from min_x, 3 to max_x, 3 nohead lt 1 lw 2
+set arrow 12 from min_x, 6 to max_x, 6 nohead lt 5 lw 1
+set arrow 13 from min_x, 8 to max_x, 8 nohead lt 5 lw 1
+set arrow 14 from min_x,11 to max_x,11 nohead lt 5 lw 1
+
+# offset value = 2 days
+# 60*60*24*2 (seconds) = 172800
+set label 1 at  min_x+172800, 2.5
+set label 1 "0-2 niedrig/low" tc lt 3
+
+set label 2 at  min_x+172800, 4.5
+set label 2 "3-5 mäßig/moderate" tc lt 3
+
+set label 3 at  min_x+172800, 6.5
+set label 3 "6-7 hoch/high" tc lt 3
+
+set label 4 at  min_x+172800, 9.5
+set label 4 "8-10 sehr hoch/very high" tc lt 3
+
+set label 5 at  min_x+172800, 12.5
+set label 5 ">=11 extrem/extreme" tc lt 3
+
+#set label 6 sprintf("NOTE: %s", NOTE) center at graph(172800, 0.5), graph(172800,1.06) textcolor rgb 'black' font 'Helvetica, 8' 
+set label 6 sprintf("NOTE: %s", NOTE) center at graph(432000, 5.5), graph(432000,6.06) textcolor rgb 'black' font 'Helvetica, 8' 
+
+
+# low
+# moderate
+# high
+# very high
+# extreme
+
+
+set style line 1 lt -1
+set style line 2 lt 1 lc rgb "dark-pink"
+
+set boxwidth 0.2 relativ
+#set boxwidth 3600*24
+set style fill transparent solid 0.6 
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+
+# dummy plot
+#plot [0:15] 1/0 notitle
+
+# plot
+#plot datain using 1:3 axis x1y1 with lines title "UV Index"
+
+plot datain using 1:3 axis x1y1 with lines ls 3 smooth bezier title "UV Max (bezier)", \
+     '' using 1:4 axis x1y1 with lines ls 4 title "UV Mean", \
+	 datain2 using 1:3 with boxes ls 2 title "monthly max", \
+	 1/0 lt 1 lw 2 title "Vitamin D (Grenze)"
+
+#plot datain using 1:3 axis x1y1 ls 1 title "UV Index"
+#set arrow 11 from min_x, 3 to max_x, 3 nohead lt 1 lw 2
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+
