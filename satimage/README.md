@@ -62,7 +62,7 @@ setup the cronjobs to run the script once a day
 ## Author
 
 * Brian Blaylock [kbkb-wx-python.blogspot.co.at](http://kbkb-wx-python.blogspot.co.at/2015/08/download-satellite-images-from-nasa.html)
-* **plix1014** - [plix1014](https://github.com/plix1014)
+* **plix1014** - [GitHub](https://github.com/plix1014)
 
 
 ## License
