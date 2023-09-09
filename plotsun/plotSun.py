@@ -167,6 +167,7 @@ def prepareSunData(fromDay, fromMonth, fromYear, toDay, toMonth, toYear, outfile
     """
     SunTimes = {}
     SunLight = {}
+    SunShine = {}
 
     # set startdate
     start_date = date( year = fromYear, month = fromMonth, day = fromDay )
@@ -231,6 +232,19 @@ def prepareSunData(fromDay, fromMonth, fromYear, toDay, toMonth, toYear, outfile
                     SunLight[keyDate] += int(wospi.CSVINTERVAL)
 
 
+            # count number of events with solar radiation > 120
+            # Die tatsächliche Sonnenscheindauer ist als die Zeitspanne definiert,
+            # während der die direkte Sonnenstrahlung senkrecht zur Sonnenrichtung mindestens 120 W/m2 beträgt
+            # https://de.wikipedia.org/wiki/Sonnenschein
+            # https://en.wikipedia.org/wiki/Sunlight
+            if keyDate not in SunShine.keys():
+                SunShine[keyDate] = int(wospi.CSVINTERVAL)
+
+            else:
+                if int(tVal) > 120:
+                    SunShine[keyDate] += int(wospi.CSVINTERVAL)
+
+
 
         # write data sorted to file
         # convert minutes to hours and write sunshine values to tmp file
@@ -241,7 +255,8 @@ def prepareSunData(fromDay, fromMonth, fromYear, toDay, toMonth, toYear, outfile
 
             try:
                 rec  = SunTimes[csvDate] + ', '
-                rec += "%.2f" % (SunLight[csvDate]/60.0)
+                rec += "%.2f" % (SunLight[csvDate]/60.0) + ', '
+                rec += "%.2f" % (SunShine[csvDate]/60.0)
                 rec += '\n'
                 st.write(rec)
 
@@ -249,6 +264,7 @@ def prepareSunData(fromDay, fromMonth, fromYear, toDay, toMonth, toYear, outfile
                 # key error, add dummy value
                 if SunTimes.has_key(csvDate):
                     rec  = SunTimes[csvDate] + ', '
+                    rec += "0.00" + ', '
                     rec += "0.00"
                     rec += '\n'
                     st.write(rec)
@@ -329,10 +345,10 @@ def runGnuPlot(plt):
     return el
 
 
-def plotSun(plt,title):
+def plotSun(plt,title, ext='input'):
     """ create plot file from template and start gnuplot
     """
-    inFile  = wospi.HOMEPATH + 'plot' + plt + '.input'
+    inFile  = wospi.HOMEPATH + 'plot' + plt + '.' + ext
     outFile = wospi.TMPPATH  + 'plot' + plt + '.plt'
 
     print_dbg(True,"INFO : plotSun: call prepareGPC for " + plt + " and run gnuplot")
