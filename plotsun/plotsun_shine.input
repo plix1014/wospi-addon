@@ -13,6 +13,7 @@ SUNRISE = system("head -1 ".tmpdir."sunrise.tmp | awk '{print $2}'")
 SUNSET  = system("head -1 ".tmpdir."sunset.tmp  | awk '{print $2}'")
 SUNHH   = system("tail -1 ".datain." | nawk -F\",\" '{gsub(/^[ ]+/,\"\",$3); print $3}'")
 
+if (GPVAL_VERSION >= 5.0) {set colors classic}
 set label sprintf("^{Sunrise}") center at SUNRISE, graph(1,1.04)
 set label sprintf("^{Sunset}") center at SUNSET, graph(1,1.04)
 
@@ -100,8 +101,9 @@ set arrow from graph(0,0),0.5    to graph(1,1),0.5    nohead ls 4 lw 2 front
 # plot charts
 plot min_y with filledcurves y1=STATS_mean lc rgb '#effbfb' notitle, \
 max_y with filledcurves y1=STATS_mean lc rgb '#effbfb' notitle, \
-datain u 1:4 with lines ls 5 axis x1y1 title "calculated Daylight hours", \
- '' u 1:5 with lines ls 2 axis x1y1 title "measured Daylight hours"
+datain u 1:4 with lines ls 5 axis x1y1 title "theoretical Daylight hours/ephemers", \
+ '' u 1:5 with lines ls 2 axis x1y1 title "calculated Daylight hours/measured", \
+ '' u 1:6 with lines ls 3 axis x1y1 title "real Daylight hours/irridation >120W"
 
 
 

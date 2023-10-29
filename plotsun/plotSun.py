@@ -7,7 +7,7 @@
 # Configuration options in config.py
 #
 # depends on:  WOSPi
-#   ephem: sudo pip install ephem
+#   ephem
 #   plotsun_*.input
 #
 # used for:
@@ -39,7 +39,7 @@ KEEP_PNG=False
 # remove *.tmp file after gnuplot
 KEEP_TMP=False
 # upload png to your homepage
-DO_SCP=False
+DO_SCP=True
 
 #
 NB_DAYS = 370
@@ -280,7 +280,7 @@ def prepareSunData(fromDay, fromMonth, fromYear, toDay, toMonth, toYear, outfile
         removeTMP(tmpwrdata)
 
     else:
-        print_db(True, "WARN : file %s is missing" % wospi.SUNTIMEFILE)
+        print_db(True, "WARN : file %s is missing" % config.SUNTIMEFILE)
 
     return
 
