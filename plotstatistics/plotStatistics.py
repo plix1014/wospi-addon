@@ -85,7 +85,7 @@ import pandas as pd
 import numpy as np
 
 # from local module
-from pywxtools import jump_by_month, print_dbg, stripNL, runGnuPlot, uploadPNG, uploadAny
+from wxtools import jump_by_month, print_dbg, stripNL, runGnuPlot, uploadPNG, uploadAny
 
 #-------------------------------------------------------------------------------
 
