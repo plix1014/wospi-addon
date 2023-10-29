@@ -1,0 +1,125 @@
+# TEMPERATURE and RELATIVE HUMIDITY from Vantage Console, DHT222 and DHT11
+#
+# Rev. 20160202/PLI
+# based on script from tmj@bitwrap.no
+# http://annoyingdesigns.com
+#
+# file variables
+isdos = system("ls /tmp 2>&1 |grep -c No")
+
+if (isdos == 1) {
+  tmpdir  = 'c:/Users/WRZLPE/Documents/peter/dev/wos/tmp/'
+} else {
+  tmpdir  = '/var/tmp/'
+}
+datain  = tmpdir . 'plotinternal_24h.tmp'
+dataout = tmpdir . 'plotinternal_rh_24h.png'
+
+
+# datetime (1)  SoC(2)   IAT(3)  IRH(4)  DHT22_T(5)  DHT22_RH(6)  DHT11_T(7)  DHT11_RH(8)
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of RH22
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot ["FROMTIME":"TOTIME"] datain using 1:6
+
+Rh22_min_y = GPVAL_DATA_Y_MIN
+Rh22_max_y = GPVAL_DATA_Y_MAX
+max_x = GPVAL_DATA_X_MAX
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of RH11
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot ["FROMTIME":"TOTIME"] datain using 1:8
+
+Rh11_min_y = GPVAL_DATA_Y_MIN
+Rh11_max_y = GPVAL_DATA_Y_MAX
+
+Td_min_y = Rh11_min_y
+Td_max_y = Rh22_max_y
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of Tsigma 
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot ["FROMTIME":"TOTIME"] datain using 1:10
+
+RHs22_min_y = GPVAL_DATA_Y_MIN
+RHs22_max_y = GPVAL_DATA_Y_MAX
+
+
+# ------------------------------------------------------------------------------------------
+
+set terminal png enhanced size 1080, 960
+set output dataout
+
+
+set multiplot layout 2,1 title "PLOTTITLE\nTIMESTAMP"  
+
+set tmargin 2
+set bmargin 0
+set format x ""
+
+set ytics 30,2.0
+set yrange [Td_min_y-1 : Td_max_y+1 ]
+set xrange [ * : max_x ]
+
+set key at graph 0.97, 0.3 box 3
+set ylabel "Relative Humidity %"
+
+# FIRST GRAPH - TEMPERATURE Vantage vs TEMPERATURE DHT22 and DHT11
+
+set grid
+
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+if (GPVAL_VERSION >= 5.0) {set colors classic}
+
+set style line 1 lc rgb '#0060ad' lt 1 lw 2
+set style line 2 lc rgb '#dd181f' lt 9 lw 2
+set style line 3 lc rgb '#29c524' lt 6 lw 2
+
+#
+plot ["FROMTIME":"TOTIME"] datain using 1:4 with lines ls 1 title sprintf("   RH_{Vantage}") axis x1y1, \
+'' using 1:6 with lines ls 2 title sprintf("   RH_{DHT22}") axis x1y1, \
+'' using 1:8 with lines ls 3 smooth bezier title sprintf("   RH_{DHT11 bezier}") axis x1y1
+
+
+
+# SECOND GRAPH - HUMIDITY Vantage vs. HUMIDITY DHT22
+
+set bmargin
+set tmargin 0
+
+set xtics nomirror
+set ytics 0,0.5
+set yrange [ 0 : 6 ]
+set xrange [ * : max_x ]
+
+set format x sprintf("%d.%m\n%H:%M")
+
+# symbol for standard deviation
+sigma = "σ"
+
+#set key default
+set key top box 3
+set ylabel sprintf("RH standard deviation %s", sigma)
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+#
+plot ["FROMTIME":"TOTIME"] datain using 1:10 with lines ls 4 smooth bezier title sprintf("   RH_{%s22}", sigma) axis x1y1, \
+'' using 1:12 with lines ls 5 smooth bezier title sprintf("   RH_{%s11}", sigma) axis x1y1
+
+
+unset multiplot
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+#

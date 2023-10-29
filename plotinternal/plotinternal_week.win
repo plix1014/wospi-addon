@@ -1,0 +1,248 @@
+# TEMPERATURE and RELATIVE HUMIDITY from Vantage Console, DHT222 and DHT11
+#
+# Rev. 20160202/PLI
+# based on script from tmj@bitwrap.no
+# http://annoyingdesigns.com
+#
+# file variables
+isdos = system("ls /tmp 2>&1 |grep -c No")
+
+if (isdos == 1) {
+  tmpdir  = 'c:/Users/WRZLPE/Documents/peter/dev/wos/tmp/'
+  csvdir  = 'c:/Users/WRZLPE/Documents/peter/dev/wos/csv_data/'
+} else {
+  tmpdir  = '/var/tmp/'
+  csvdir  = '/home/wospi/csv_data/'
+}
+datain  = tmpdir . 'plotinternal_week.tmp'
+dataout = tmpdir . 'plotinternal_week.png'
+sun     = csvdir . 'suntimes.csv'
+if (GPVAL_VERSION >= 5.0) {set colors classic}
+
+
+# datetime (1)  SoC(2)   IAT(3)  IRH(4)  DHT22_T(5)  DHT22_RH(6)  DHT11_T(7)  DHT11_RH(8)
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of Tdht 
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot datain using 1:5
+
+Td22_min_y = GPVAL_DATA_Y_MIN
+Td22_max_y = GPVAL_DATA_Y_MAX
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of Tdht 
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot datain using 1:7
+
+Td11_min_y = GPVAL_DATA_Y_MIN
+Td11_max_y = GPVAL_DATA_Y_MAX
+
+Td_min_y = Td11_min_y
+Td_max_y = Td22_max_y
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of Tvantage
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot datain using 1:3
+
+Tv_min_y = GPVAL_DATA_Y_MIN
+Tv_max_y = GPVAL_DATA_Y_MAX
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of RHv
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot datain using 1:4
+
+RHv_min_y = GPVAL_DATA_Y_MIN
+RHv_max_y = GPVAL_DATA_Y_MAX
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of RHdht
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot datain using 1:6
+
+RHd22_min_y = GPVAL_DATA_Y_MIN
+RHd22_max_y = GPVAL_DATA_Y_MAX
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of RHdht
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot datain using 1:8
+
+RHd11_min_y = GPVAL_DATA_Y_MIN
+RHd11_max_y = GPVAL_DATA_Y_MAX
+
+RHd_min_y = RHd11_min_y
+RHd_max_y = RHd22_max_y
+
+reset
+
+# ------------------------------------------------------------------------------------------
+
+set terminal png enhanced size 1080, 960
+set output dataout
+
+set size 1,1
+set origin 0,0
+
+set multiplot title "PLOTTITLE\nTIMESTAMP"  
+
+
+# SUPPORT FUNCTION TO CONVERT DEGREES C TO DEGREES F 
+toF(temp) = (temp * 1.8) + 32
+
+
+# FIRST GRAPH - TEMPERATURE Vantage vs TEMPERATURE DHT22 and DHT11
+set size 1,0.45
+set origin 0,0.5
+
+# NOTE: Set ylabel for temperature in degrees C
+set ylabel "Temperature \260C"
+
+set title sprintf("TEMPERATURE (T_{vantage}, T_{DHT22}, T_{DHT11}) Bezier aproximated")
+set grid
+
+set key below
+set key spacing 3
+
+set y2tics
+set ytics nomirror
+set yrange[(Td_min_y < Tv_min_y ? Td_min_y-1 : Tv_min_y-1) : (Td_max_y > Tv_max_y ? Td_max_y+1 : Tv_max_y+1)]
+set xrange [ * : GPVAL_DATA_X_MAX ]
+
+
+set xtics font 'Verdana, 9'
+
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+
+SUNRISE7  = system("tail -7 ".sun." | awk \"{print $1\",\"$2}\" | head -1")
+SUNSET7   = system("tail -7 ".sun." | awk \"{print $1\",\"$3}\" | head -1")
+SUNRISE6  = system("tail -6 ".sun." | awk \"{print $1\",\"$2}\" | head -1")
+SUNSET6   = system("tail -6 ".sun." | awk \"{print $1\",\"$3}\" | head -1")
+SUNRISE5  = system("tail -5 ".sun." | awk \"{print $1\",\"$2}\" | head -1")
+SUNSET5   = system("tail -5 ".sun." | awk \"{print $1\",\"$3}\" | head -1")
+SUNRISE4  = system("tail -4 ".sun." | awk \"{print $1\",\"$2}\" | head -1")
+SUNSET4   = system("tail -4 ".sun." | awk \"{print $1\",\"$3}\" | head -1")
+SUNRISE3  = system("tail -3 ".sun." | awk \"{print $1\",\"$2}\" | head -1")
+SUNSET3   = system("tail -3 ".sun." | awk \"{print $1\",\"$3}\" | head -1")
+SUNRISE2  = system("tail -2 ".sun." | awk \"{print $1\",\"$2}\" | head -1")
+SUNSET2   = system("tail -2 ".sun." | awk \"{print $1\",\"$3}\" | head -1")
+
+SUNRISE = system("head -1 ".tmpdir."sunrise.tmp")
+SUNSET  = system("head -1 ".tmpdir."sunset.tmp")
+
+set label sprintf("^{Sunrise}") center at SUNRISE, graph(1,1.02) font 'Verdana, 8'
+set label sprintf("^{Sunset}" ) center at SUNSET,  graph(1,1.02) font 'Verdana, 8'
+set arrow from SUNRISE,graph(0,0) to SUNRISE,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET,graph(0,0) to SUNSET,graph(1,1) nohead ls 4 lw 1
+
+#set arrow from SUNRISE7,graph(0,0) to SUNRISE7,graph(1,1) nohead ls 4 lw 2 
+#set arrow from SUNSET7, graph(0,0) to SUNSET7, graph(1,1) nohead ls 4 lw 1
+set arrow from SUNRISE6,graph(0,0) to SUNRISE6,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET6, graph(0,0) to SUNSET6, graph(1,1) nohead ls 4 lw 1
+set arrow from SUNRISE5,graph(0,0) to SUNRISE5,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET5, graph(0,0) to SUNSET5, graph(1,1) nohead ls 4 lw 1
+set arrow from SUNRISE4,graph(0,0) to SUNRISE4,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET4, graph(0,0) to SUNSET4, graph(1,1) nohead ls 4 lw 1
+set arrow from SUNRISE3,graph(0,0) to SUNRISE3,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET3, graph(0,0) to SUNSET3, graph(1,1) nohead ls 4 lw 1
+set arrow from SUNRISE2,graph(0,0) to SUNRISE2,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET2, graph(0,0) to SUNSET2, graph(1,1) nohead ls 4 lw 1
+
+# NOTE: ---------- READ CAREFULLY ---------- READ CAREFULLY ---------- READ CAREFULLY ----------
+
+# datetime (1)  SoC(2)   IAT(3)  IRH(4)  DHT22_T(5)  DHT22_RH(6)  DHT11_T(7)  DHT11_RH(8)
+set style line 1 lc rgb '#0060ad' lt 1 lw 2
+set style line 2 lc rgb '#dd181f' lt 9 lw 2
+set style line 3 lc rgb '#29c524' lt 6 lw 2
+set style line 4 lc rgb '#7D72F9' lt 7 lw 2
+set style line 5 lc rgb '#000000' lt 8 lw 2
+
+plot datain using 1:5 with lines ls 2 smooth bezier title sprintf("   T_{DHT22}") axis x1y1, \
+'' using 1:7 with lines ls 3 smooth bezier title sprintf("   T_{DHT11}") axis x1y1, \
+'' using 1:3 with lines ls 1 smooth bezier title sprintf("   T_{Vantage}") axis x1y1
+
+
+# NOTE: ---------- READ CAREFULLY ---------- READ CAREFULLY ---------- READ CAREFULLY ----------
+
+
+
+# SECOND GRAPH - HUMIDITY Vantage vs. HUMIDITY DHT22
+#
+reset
+set size 1,0.45
+set origin 0,0
+
+set title sprintf("HUMIDITY (RH_{vantage}, RH_{DHT22}, RH_{DHT11})")
+set grid
+
+set key below
+set key spacing 3
+
+set y2tics
+set ytics nomirror
+set ylabel "Relative Humidity %"
+
+set yrange[(RHd_min_y < RHv_min_y ? RHd_min_y-1 : RHv_min_y-1) : (RHd_max_y > RHv_max_y ? RHd_max_y+1 : RHv_max_y+1)]
+set xrange [ * : GPVAL_DATA_X_MAX ]
+
+set xtics font 'Verdana, 9'
+
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+
+#
+set label sprintf("^{Sunrise}") center at SUNRISE, graph(1,1.02) font 'Verdana, 8'
+set label sprintf("^{Sunset}" ) center at SUNSET,  graph(1,1.02) font 'Verdana, 8'
+set arrow from SUNRISE,graph(0,0) to SUNRISE,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET,graph(0,0) to SUNSET,graph(1,1) nohead ls 4 lw 1
+
+set arrow from SUNRISE6,graph(0,0) to SUNRISE6,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET6, graph(0,0) to SUNSET6, graph(1,1) nohead ls 4 lw 1
+set arrow from SUNRISE5,graph(0,0) to SUNRISE5,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET5, graph(0,0) to SUNSET5, graph(1,1) nohead ls 4 lw 1
+set arrow from SUNRISE4,graph(0,0) to SUNRISE4,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET4, graph(0,0) to SUNSET4, graph(1,1) nohead ls 4 lw 1
+set arrow from SUNRISE3,graph(0,0) to SUNRISE3,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET3, graph(0,0) to SUNSET3, graph(1,1) nohead ls 4 lw 1
+set arrow from SUNRISE2,graph(0,0) to SUNRISE2,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET2, graph(0,0) to SUNSET2, graph(1,1) nohead ls 4 lw 1
+
+set style line 1 lc rgb '#0060ad' lt 1 lw 2
+set style line 2 lc rgb '#dd181f' lt 9 lw 2
+set style line 3 lc rgb '#29c524' lt 6 lw 2
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+#
+plot datain using 1:6 with lines ls 2 smooth bezier title sprintf("   RH_{DHT22}") axis x1y1, \
+'' using 1:8 with lines ls 3 smooth bezier title sprintf("   RH_{DHT11}") axis x1y1, \
+'' using 1:4 with lines ls 1 smooth bezier title sprintf("   RH_{Vantage}") axis x1y1
+
+
+unset multiplot
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+#
