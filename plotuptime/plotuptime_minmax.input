@@ -1,0 +1,108 @@
+# MIN/MAX UPTIME PLOT
+#
+# Rev. 20160121/PLI
+# based on script from tmj@bitwrap.no
+# http://annoyingdesigns.com
+#
+# file variables
+isdos = system("ls /tmp 2>&1 |grep -c No")
+
+if (isdos == 1) {
+  tmpdir  = 'c:/Users/WRZLPE/Documents/peter/dev/wos/tmp/'
+} else {
+  tmpdir  = '/var/tmp/'
+}
+datain  = tmpdir . 'plotuptime_minmax.tmp'
+dataout = tmpdir . 'plotuptime_minmax.png'
+fitout  = tmpdir . 'fituptime.log'
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y'
+set datafile separator ','
+
+plot datain using 1:2 axis x1y1, \
+'' using 1:3 axis x1y2
+
+min_y  = GPVAL_DATA_Y_MIN
+max_y  = GPVAL_DATA_Y_MAX
+min_y2 = GPVAL_DATA_Y2_MIN
+max_y2 = GPVAL_DATA_Y2_MAX
+
+# Count number of records
+unset xdata
+stats datain using 2:3
+set xdata time
+
+reset
+
+
+
+# PERFORM THE ACTUAL PLOT
+set terminal png enhanced size 1080, 480
+set output dataout
+if (GPVAL_VERSION >= 5.0) {set colors classic}
+
+set ylabel "Uptime h"
+set y2label "Uptime days"
+
+set title sprintf("PLOTTITLE\nTIMESTAMP")
+
+set nokey
+
+set xtics rotate
+set xtics font 'Helvetica, 9'
+#set xtics font 'Verdana, 9'
+set ytics nomirror
+set y2range [min_y2:max_y2]
+set y2tics
+
+set xdata time
+set timefmt '%d.%m.%Y'
+set datafile separator ','
+set format x sprintf("%d.%m.%Y")
+set autoscale fix
+
+
+# Add some "room" to the graph (-2, +2)
+set yrange[min_y-2:max_y+2]
+
+# Adjust number of X labels
+xT = 1
+if(STATS_records < 25) xT = 1; else if (STATS_records < 50) xT = 2; else if (STATS_records < 100) xT = 4; else if(STATS_records < 200) xT = 10; else xT = 15
+set xtics 86400 * xT
+
+
+# Calculate mean_y (could as well use the STATS data)
+set fit logfile fitout
+f(x) = mean_y
+fit f(x) datain u 1:($2) via mean_y
+
+set label 1 sprintf("MIN = %#1.1fh  MAX = %#1.1fh  AVERAGE = %#1.1fh over a period of %d days", min_y, max_y, mean_y, STATS_records) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Helvetica, 10'
+#set label 1 sprintf("MIN = %#1.1fh  MAX = %#1.1fh  AVERAGE = %#1.1fh over a period of %d days", min_y, max_y, mean_y, STATS_records) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Verdana, 10'
+
+
+set xlabel textcolor rgb 'red'
+set xlabel offset 0,-1.2
+set xlabel font 'Helvetica, 10'
+#set xlabel font 'Verdana, 10'
+
+set grid front lt 8
+set style fill transparent solid 0.7
+#set style fill pattern 4 bo
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+#
+# plot charts
+plot min_y-2 with filledcurves y1=mean_y lc rgb '#87cefa' notitle, \
+max_y+2 with filledcurves y1=mean_y lc rgb '#f5f5f5' notitle, \
+mean_y with lines lw 2 lc rgb '#ff1493' title 'Average Uptime', \
+datain u 1:3 with filledcurves x1 lc rgb '#c71585', \
+'' u 1:3 with lines lc rgb 'black' title 'max temperature', \
+'' u 1:2 with filledcurves x1 lc rgb 'steelblue', \
+'' u 1:2 with lines lc rgb 'black' title 'min temperature'
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+
