@@ -8,13 +8,14 @@
 tmpdir  = '/var/tmp/'
 year    = system("head -1 ".tmpdir."labels.tmp")
 datain  = tmpdir . year . '.statistics_month.csv'
-dataout = tmpdir . 'plottemp_' . year . '.png' 
+dataout = tmpdir . 'plottemp_' . year . '.png'
 
 
 # ------------------------------------------------------------------------------------------
 # PERFORM THE ACTUAL PLOT
 set terminal png enhanced size 1080, 960
 set output dataout
+if (GPVAL_VERSION >= 5.0) {set colors classic}
 
 # get lables
 # titles
@@ -33,7 +34,7 @@ LSUM    = system("tail  -4 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print 
 LHEA    = system("tail  -3 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $1}'")
 LDES    = system("tail  -2 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $1}'")
 LTRO    = system("tail  -1 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $1}'")
-# lable values
+# label values
 TICE    = system("tail  -6 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $2}'")
 TFRE    = system("tail  -5 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $2}'")
 TSUM    = system("tail  -4 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print $2}'")
@@ -43,12 +44,15 @@ TTRO    = system("tail  -1 ".tmpdir."labels.tmp | head -1 | awk -F\";\" '{print 
 
 # ------------------------------------------------------------------------------------------
 
+# just to skip the header in the csv
+# # https://stackoverflow.com/questions/35526481/gnuplot-shortest-way-to-ignore-first-line-in-datafile
+set key autotitle columnhead
 set ylabel sprintf("%s", YLAB)
 set title sprintf("%s %s", XTIT,year)
 set grid
 
 set xtics font 'Verdana, 8'
-set ytics 2 
+set ytics 2
 
 set timefmt '%Y-%m-%d'
 set datafile separator ','
@@ -60,6 +64,20 @@ set style data histograms
 set style fill solid border -1
 set boxwidth 0.80
 
+# --------- calculate y bounderies ---------
+# set minimal y-axis limits
+
+stats datain u 1:6 nooutput
+y_fre = STATS_max_y
+
+stats datain u 1:7 nooutput
+y_sum = STATS_max_y
+
+min_y = y_fre
+max_y = y_sum
+
+set yrange[(min_y > 10 ? -min_y-1 : -10) : (max_y < 10 ? 10 : max_y+1)]
+# --------- calculate y bounderies ---------
 
 # NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
 #

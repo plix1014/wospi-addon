@@ -164,7 +164,7 @@ LabelTextEN_Rain = {
 }
 
 # set to desired language
-LabelText = LabelTextEN
+LabelText  = LabelTextEN
 LabelTextR = LabelTextEN_Rain
 
 
@@ -206,7 +206,7 @@ KEEP_PNG = True
 # keep temporary files
 KEEP_TMP = True
 # upload png and inc
-DO_SCP   = False
+DO_SCP   = True
 
 #-------------------------------------------------------------------------------
 

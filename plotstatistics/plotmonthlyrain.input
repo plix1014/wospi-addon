@@ -5,17 +5,12 @@
 #
 
 # file variables
-isdos = system("ls /tmp 2>&1 |grep -c No")
-
-if (isdos == 1) {
-  tmpdir  = 'c:/Users/WRZLPE/Documents/peter/dev/wos/tmp/'
-} else {
-  tmpdir  = '/var/tmp/'
-}
+tmpdir  = '/var/tmp/'
 year    = system("head -1 ".tmpdir."labels_rain.tmp")
 datain  = tmpdir . year . '.statistics_month_rain.csv'
 dataout = tmpdir . 'monthlyrain_' . year . '.png'
 
+if (GPVAL_VERSION >= 5.0) {set colors classic}
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
 # Scale Y2 axis for mm rain with padding space
