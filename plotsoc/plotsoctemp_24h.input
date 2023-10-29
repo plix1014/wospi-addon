@@ -1,0 +1,76 @@
+# 24h OF SoC Temperatur DATA
+#
+# Rev. 20160109/PLI
+# based on script from tmj@bitwrap.no
+# http://annoyingdesigns.com
+#
+# file variables
+isdos = system("ls /tmp 2>&1 |grep -c No")
+
+if (isdos == 1) {
+  tmpdir  = 'c:/Users/WRZLPE/Documents/peter/dev/wos/tmp/'
+} else {
+  tmpdir  = '/var/tmp/'
+}
+datain  = tmpdir . 'plotsoctemp_24h.tmp'
+dataout = tmpdir . 'plotsoctemp_24h.png'
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of SoC temperature
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot ["FROMTIME":"TOTIME"] datain using 1:2
+
+soctemp_min_y = GPVAL_DATA_Y_MIN
+soctemp_max_y = GPVAL_DATA_Y_MAX
+
+reset
+
+set terminal png enhanced size 1080, 768
+set output dataout
+if (GPVAL_VERSION >= 5.0) {set colors classic}
+
+#set size 1,1
+#set origin 0,0
+
+set title "PLOTTITLE\nTIMESTAMP"  
+
+
+# SUPPORT FUNCTION TO CONVERT DEGREES C TO DEGREES F 
+toF(temp) = (temp * 1.8) + 32
+
+
+# NOTE: Set ylabel for temperature in degrees C or F - uncomment/comment (#) below
+#set ylabel "SoC Temperature \260C"
+
+set grid front 
+set key left below
+
+
+# uncomment four lines below for dual y-axis values (hPa (mb) AND inHg) + set font size to 9
+set xtics font 'Helvetica, 9'
+set ytics font 'Helvetica, 11'
+#set xtics font 'Verdana, 9'
+#set ytics font 'Verdana, 11'
+
+set ylabel "SoC Temperature \260C" font 'Helvetica, 11' offset 2,0
+#set ylabel "SoC Temperature \260C" font 'Verdana, 11' offset 2,0
+set ytics nomirror
+set yrange[soctemp_min_y-1:soctemp_max_y+1]
+
+set grid
+set nokey 
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+
+set format y '%#.1f'
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+#
+plot ["FROMTIME":"TOTIME"] datain using 1:2:(0.5) smooth acsplines lw 2 lc rgb 'steelblue'
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+#

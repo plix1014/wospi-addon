@@ -1,0 +1,78 @@
+# ONE WEEK OF SoC Temperatur DATA
+#
+# Rev. 20160109/PLI
+# based on script from tmj@bitwrap.no
+# http://annoyingdesigns.com
+#
+# file variables
+isdos = system("ls /tmp 2>&1 |grep -c No")
+
+if (isdos == 1) {
+  tmpdir  = 'c:/Users/WRZLPE/Documents/peter/dev/wos/tmp/'
+} else {
+  tmpdir  = '/var/tmp/'
+}
+datain  = tmpdir . 'plotsoctemp_week.tmp'
+dataout = tmpdir . 'plotsoctemp_week.png'
+fitout  = tmpdir . 'fitsoc.log'
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of SoC temperature
+set terminal unknown
+set xdata time
+set timefmt '%Y.%m.%d %H:%M:%S'
+set datafile separator ','
+
+plot datain using 1:2 axis x1y1
+
+min_y = GPVAL_DATA_Y_MIN
+max_y = GPVAL_DATA_Y_MAX
+
+
+# Calculate mean of SoC temperature samples 
+unset xdata
+stats datain using 2
+set xdata time
+
+reset
+
+set terminal png enhanced size 1080, 480
+set output dataout
+if (GPVAL_VERSION >= 5.0) {set colors classic}
+
+
+#set ylabel "\260C"
+set ylabel "SoC Temperature \260C"
+
+set title "PLOTTITLE\nTIMESTAMP"  
+
+set grid front 
+set key left below
+
+set xtics rotate
+set xtics 86400
+set xtics font 'Helvetica, 9'
+#set xtics font 'Verdana, 9'
+unset mxtics
+set ytics nomirror
+set format y "%#.1f"
+
+set xdata time
+set timefmt '%Y.%m.%d %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m.%Y")
+set auto fix
+
+# COMMENT/UNCOMMENT FOR METRIC OR US UNITS 
+set label 1 sprintf("MIN = %#.1f \260C    MAX = %#.1f \260C   WEEK AVERAGE = %#.1f \260C", min_y,  max_y, STATS_mean) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Helvetica, 10'
+#set label 1 sprintf("MIN = %#.1f \260C    MAX = %#.1f \260C   WEEK AVERAGE = %#.1f \260C", min_y,  max_y, STATS_mean) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Verdana, 10'
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+#
+plot min_y-2 with filledcurves y1=STATS_mean lc rgb '#effbfb' notitle, \
+max_y+2 with filledcurves y1=STATS_mean lc rgb '#effbfb' notitle, \
+STATS_mean with lines lw 2 lc rgb '#ff1493' title 'Average SoC temperature', \
+datain using 1:2:(1.0) smooth acsplines lw 2 lc rgb 'steelblue' title 'Recorded SoC temperature'
+
+# NOTE: ---------- PLOT ---------- PLOT ---------- PLOT ----------
+#
