@@ -18,7 +18,7 @@
 #   PLI, 07.12.2015: cwop
 #   PLI, 03.01.2016: wxdata path change
 #   PLI, 28.07.2018: get ftp server from config.py
-#   PLI, 22.10.2020: get LOCAL_TMP_DIR
+#   PLI, 22.10.2023: get LOCAL_TMP_DIR
 #-------------------------------------------------------------------------------
 #
 

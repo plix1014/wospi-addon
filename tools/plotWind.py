@@ -21,6 +21,9 @@
 # Copyright:   (c) Peter Lidauer 2015
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 24.10.2023: remove debug code
+#
 
 import sys,os, shutil
 

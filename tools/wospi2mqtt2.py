@@ -1,8 +1,13 @@
 #!/usr/bin/python
 #
-# 2018-08-18: pli
-#
 # triggers mqtt publish after four updates to the wxdata.xml
+#
+# Created:     18.08.2018
+# Copyright:   (c) Peter Lidauer 2018
+# Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
+#-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 24.10.2023: use enviroment variables for basic setings
 #
 
 import time
@@ -15,7 +20,6 @@ import pyinotify
 # Define Variables
 MQTT_KEEPALIVE_INTERVAL = 45
 MQTT_QOS   = 1
-
 
 # read environment
 WXIN                  = os.environ.get('WXIN', '/var/tmp/wxdata.xml')

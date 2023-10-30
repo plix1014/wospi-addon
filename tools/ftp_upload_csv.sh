@@ -16,6 +16,7 @@
 # Changes:
 #  PLI, 06.01.2016: csv
 #  PLI, 28.07.2018: get ftp server from config.py
+#  PLI, 24.10.2023: add REM_DIR to infoline
 #
 
 # basis directory of WOSPi installation
