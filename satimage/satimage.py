@@ -40,6 +40,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageSequence
 from images2gif import writeGif
 from fnmatch import fnmatch
+import imghdr
 
 from config import FSCPTARGET
 
@@ -47,7 +48,10 @@ from config import FSCPTARGET
 FONT = 'FreeSans.ttf'
 
 # save dir for jpeg images
-outdir = '/var/tmp/'
+if (sys.platform == "win32" ):
+    outdir = 'c:/Users/WRZLPE/Documents/peter/dev/wetter/tmp'
+else:
+    outdir = '/var/tmp/'
 
 # gif file name
 outgif = outdir + 'radar.gif'
@@ -119,6 +123,7 @@ def animate_gif(in_dir,in_mask):
 
     except Exception as e:
         print_dbg(True, 'ERROR: could not create %s: %s.' % (outgif,e))
+        sys.exit(3)
 
     if not KEEP_TMP:
         for fn in file_names:
@@ -167,6 +172,8 @@ def main():
     WIDTH  = "1772"
     HEIGHT = "976"
 
+    # abort counter
+    n=0
     while end_date >= now:
         year  = str(now.year)
         month = str(now.month).zfill(2)
@@ -212,15 +219,30 @@ def main():
                 try:
                     urllib.urlretrieve(URL, outdir+image_name)
 
-                    add_watermark(outdir+image_name,sat+': '+stringdate,outdir+image_name)
-                    print_dbg(True, "  " + image_name)
-
                 except Exception as e:
                     print_dbg(True, 'ERROR: URL: %s.' % (URL))
                     print_dbg(True, 'ERROR: could not download %s: %s.' % (image_name,e))
+                    sys.exit(1)
+
+                if imghdr.what(outdir+image_name) == 'jpeg':
+                    add_watermark(outdir+image_name,sat+': '+stringdate,outdir+image_name)
+                    print_dbg(True, "  " + image_name)
+                else:
+                    n += 1
+                    print_dbg(True, 'ERROR: URL: %s.' % (URL))
+                    print_dbg(True, "  %s is not a valid image file!" % image_name)
+                    f    = open(outdir+image_name)
+                    ftxt = f.read()
+                    print(ftxt)
+                    f.close()
                     if (os.path.isfile(outdir+image_name)):
                         os.unlink(outdir+image_name)
-                    sys.exit(1)
+
+                    # abort, if too many errors occure
+                    if int(n) > abs(NUMDAYS):
+                        print_dbg(True, 'too many exceptions occured. Aborting...')
+                        sys.exit(2)
+
             else:
                 print_dbg(True, 'INFO: File %s already present.' % (image_name))
 
