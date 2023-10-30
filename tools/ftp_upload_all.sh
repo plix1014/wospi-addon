@@ -18,6 +18,7 @@
 #   PLI, 07.12.2015: cwop
 #   PLI, 03.01.2016: wxdata path change
 #   PLI, 28.07.2018: get ftp server from config.py
+#   PLI, 22.10.2020: get LOCAL_TMP_DIR
 #-------------------------------------------------------------------------------
 #
 
@@ -40,6 +41,7 @@ LOCAL_TMP_DIR=$(grep ^LOCAL_TMP_DIR $WOSPI/wetter/config.py \
 
 SCPTARGET=$(grep ^FSCPTARGET $WOSPI/wetter/config.py \
     | awk -F"=" '{print $2}' \
+    | tail -1 \
     | sed -e 's, ,,g' -e "s,',,g")
 
 REM_DIR=$(echo "$SCPTARGET"  | awk -F":" '{print $2}')
@@ -66,7 +68,7 @@ echo
 
 echo "$(date)"
 echo
-echo "# 3 # transfer all to $REM_HOST"
+echo "# 3 # transfer all to $REM_HOST:$REM_DIR"
 
 cd $TMPDIR
 
@@ -79,7 +81,7 @@ put conditions.inc
 put vitamind.inc
 put wxdata.xml
 put wxdata.txt
-lcd temp_plot
+lcd $LOCAL_TMP_DIR
 put icon.html
 mput *.txt
 mput *.png

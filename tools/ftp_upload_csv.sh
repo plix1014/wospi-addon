@@ -18,19 +18,20 @@
 #  PLI, 28.07.2018: get ftp server from config.py
 #
 
-
 # basis directory of WOSPi installation
 WOSPI=/home/wospi
 
 # --------------------------------------------------------------------
 [ ! -r "$WOSPI/wetter/config.py" ] && echo "ERROR: $WOSPI not found. configure script." && exit 10
 
+# csv data
 CSVPATH=$(grep ^CSVPATH $WOSPI/wetter/config.py \
     | awk -F"=" '{print $2}' \
     | sed -e 's, ,,g' -e "s,',,g")
 
 SCPTARGET=$(grep ^FSCPTARGET $WOSPI/wetter/config.py \
     | awk -F"=" '{print $2}' \
+    | tail -1 \
     | sed -e 's, ,,g' -e "s,',,g")
 
 REM_DIR=$(echo "$SCPTARGET"  | awk -F":" '{print $2}')
@@ -50,7 +51,7 @@ YY=$(date +'%Y')
 
 echo "$(date)"
 echo
-echo "# 3 # transfer csv to $REM_HOST"
+echo "# 3 # transfer all to $REM_HOST:$REM_DIR"
 
 cd $CSVPATH
 

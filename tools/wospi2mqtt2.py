@@ -13,12 +13,18 @@ import json
 import pyinotify
 
 # Define Variables
-MQTT_HOST  = "192.168.20.70"
-MQTT_PORT  = 1883
 MQTT_KEEPALIVE_INTERVAL = 45
 MQTT_QOS   = 1
 
-MQTT_TOPIC_BASE       = 'athome/eg/wospi'
+
+# read environment
+WXIN                  = os.environ.get('WXIN', '/var/tmp/wxdata.xml')
+#
+MQTT_HOST             = os.environ.get('MQTT_HOST', '192.168.20.70')
+MQTT_PORT             = os.environ.get('MQTT_PORT', '1883')
+MQTT_TOPIC_BASE       = os.environ.get('MQTT_TOPIC_BASE', 'athome/eg/wospi')
+
+# define subjects
 MQTT_TOPIC_OTEMP      = MQTT_TOPIC_BASE + "/outtemp"
 MQTT_TOPIC_ITEMP      = MQTT_TOPIC_BASE + "/intemp"
 MQTT_TOPIC_PRESSURE   = MQTT_TOPIC_BASE + "/pressure"
@@ -36,8 +42,6 @@ MQTT_MSG_DAYRAIN      = 0
 MQTT_MSG_UVINDEX      = 0
 MQTT_MSG_ALL          = ''
 
-# wospi imput file
-WXIN = '/var/tmp/wxdata.xml'
 
 # empty
 WXDATA = {}
