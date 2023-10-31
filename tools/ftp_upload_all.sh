@@ -25,6 +25,23 @@
 # basis directory of WOSPi installation
 WOSPI=/home/wospi
 
+# activate/deactivate upload scripts
+RUN_UPD=1
+
+# https://www.awekas.at/wp/
+RUN_AWEKAS=1
+# http://austrian-weather.com/
+RUN_ATWN=1
+# APRS upload
+RUN_CWOP=1
+# save each precipitation values into csv (instead of daily sums)
+RUN_RAIN=1
+
+# internal temperature
+RUN_INTERN=0
+# sunfile backup
+RUN_SUN=0
+
 # --------------------------------------------------------------------
 [ ! -r "$WOSPI/wetter/config.py" ] && echo "ERROR: $WOSPI not found. configure script." && exit 10
 
@@ -58,46 +75,69 @@ REM_HOST=$(echo "$SCPTARGET" \
 $WOSPI/tools/fill_template.sh
 
 # awekas
-$WOSPI/tools/mk_awekas.sh
-echo
+if [ $RUN_AWEKAS -eq 1 ]; then
+    $WOSPI/tools/mk_awekas.sh
+    echo
+fi
 
 # atwn
-$WOSPI/tools/mk_atwn.sh
-echo
+if [ $RUN_ATWN -eq 1 ]; then
+    $WOSPI/tools/mk_atwn.sh
+    echo
+fi
 
 
-echo "$(date)"
-echo
-echo "# 3 # transfer all to $REM_HOST:$REM_DIR"
+if [ $RUN_UPD -eq 1 ]; then
+    echo "$(date)"
+    echo
+    echo "# 3 # transfer all to $REM_HOST:$REM_DIR"
 
-cd $TMPDIR
+    cd $TMPDIR
 
-# upload to Homepage
-lftp $REM_HOST <<-EOF
-cd $REM_DIR
-put awekas.html
-put atwn.txt
-put conditions.inc
-put vitamind.inc
-put wxdata.xml
-put wxdata.txt
-lcd $LOCAL_TMP_DIR
-put icon.html
-mput *.txt
-mput *.png
-bye
-quit
-EOF
+    # currently disabled
+	#lcd $LOCAL_TMP_DIR
+	#put icon.html
+	#mput *.txt
+	#mput *.png
+
+    # upload to Homepage
+    lftp $REM_HOST <<-EOF
+	cd $REM_DIR
+	put awekas.html
+	put atwn.txt
+	put conditions.inc
+	put vitamind.inc
+	put wxdata.xml
+	put wxdata.txt
+	bye
+	quit
+	EOF
+fi
 
 # upload CWOP
-echo
-echo "# 4 # upload to CWOP"
-$WOSPI/tools/upload_cwop.py
-echo
+if [ $RUN_CWOP -eq 1 ]; then
+    echo
+    echo "# 4 # upload to CWOP"
+    $WOSPI/tools/upload_cwop.py
+    echo
+fi
 
-#$WOSPI/wetter/plotInternal.py 
-#echo
-#$WOSPI/tools/save_sunfile.sh
+# save each precipitation values into csv (instead of daily sums)
+if [ $RUN_RAIN -eq 1 ]; then
+    echo
+    echo "# 5 # save raindata"
+    $WOSPI/tools/mk_raintable.sh
+    echo
+fi
 
-$WOSPI/tools/mk_raintable.sh
+# internal temperature
+if [ $RUN_INTERN -eq 1 ]; then
+    $WOSPI/wetter/plotInternal.py 
+    echo
+fi
+
+# sunfile backup
+if [ $RUN_SUN -eq 1 ]; then
+    $WOSPI/tools/save_sunfile.sh
+fi
 
