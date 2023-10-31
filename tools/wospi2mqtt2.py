@@ -196,6 +196,11 @@ class EventHandler(pyinotify.ProcessEvent):
 
 def main():
 
+    print_dbg(DEBUG, "MQTT_HOST      : %s" % (MQTT_HOST))
+    print_dbg(DEBUG, "MQTT_PORT      : %s" % (MQTT_PORT))
+    print_dbg(DEBUG, "MQTT_TOPIC_BASE: %s" % (MQTT_TOPIC_BASE))
+    print_dbg(DEBUG, "WXDATA         : %s" % (WXIN))
+
     mqttc    = initialize()
 
     wm       = pyinotify.WatchManager()   # Watch Manager
