@@ -57,7 +57,7 @@ Connected = False
 
 #---------------------------------------------------------------------
 def print_dbg(level,msg):
-    now = time.strftime('%a %b %d %H:%M:%S %Y LT:')
+    now = time.strftime('%a %b %e %H:%M:%S %Y LT:')
     if level:
         print("%s %s" % (now,msg))
     return
