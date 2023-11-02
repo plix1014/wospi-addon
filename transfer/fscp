@@ -92,12 +92,12 @@ fi
 
 cd $TMPDIR
 
-[ ! -r "$OUTFILE" ] && echo "$(date +'%a %b %d %T %Y LT:') ERROR: $OUTFILE not found." && exit 11
+[ ! -r "$OUTFILE" ] && echo "$(date +'%a %b %e %T %Y LT:') ERROR: $OUTFILE not found." && exit 11
 
 if [ $DEBUG ]; then
-    echo "$(date +'%a %b %d %T %Y LT:') INFO : transferring $OUTFILE to $REM_HOST:$REM_DIR" | tee -a $USE_LOG
+    echo "$(date +'%a %b %e %T %Y LT:') INFO : transferring $OUTFILE to $REM_HOST:$REM_DIR" | tee -a $USE_LOG
 else
-    echo "$(date +'%a %b %d %T %Y LT:') INFO : transferring $OUTFILE to $REM_HOST:$REM_DIR"
+    echo "$(date +'%a %b %e %T %Y LT:') INFO : transferring $OUTFILE to $REM_HOST:$REM_DIR"
 fi
 
 TRANS_FILE=${OUTFILE##*/}
