@@ -30,6 +30,9 @@
 # Copyright:   (c) Brian Blaylock, Peter Lidauer 2015
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 02.11.2023: adjustments for container image
+#
 
 import sys, os
 import urllib
@@ -45,13 +48,11 @@ import imghdr
 from config import FSCPTARGET
 
 # font for watermark text
-FONT = 'FreeSans.ttf'
+#FONT = 'DejaVuSans.ttf'
+FONT = 'DejaVuSansMono.ttf'
 
 # save dir for jpeg images
-if (sys.platform == "win32" ):
-    outdir = 'c:/Users/WRZLPE/Documents/peter/dev/wetter/tmp'
-else:
-    outdir = '/var/tmp/'
+outdir = '/var/tmp/'
 
 # gif file name
 outgif = outdir + 'radar.gif'
