@@ -103,11 +103,11 @@ def runGnuPlot(plt, KEEP_TMP=False, LEVEL1=False, LEVEL2=False):
     return el
 
 
-def uploadAny(inFile, DO_SCP=True, KEEP_IN=False):
+def uploadAny(inFile, DO_SCP=True, KEEP_IN=False, trans_mode='scp'):
     """ copies the any file to the website
     """
 
-    SCPCOMMAND_PLOTINT = 'scp -o ConnectTimeout=12 %s %s' % (inFile, config.SCPTARGET)
+    SCPCOMMAND_PLOTINT = '%s -o ConnectTimeout=12 %s %s' % (trans_mode, inFile, config.SCPTARGET)
 
     if DO_SCP:
         try:
@@ -126,11 +126,11 @@ def uploadAny(inFile, DO_SCP=True, KEEP_IN=False):
     return
 
 
-def uploadPNG(png, DO_SCP=True, KEEP_PNG=False):
+def uploadPNG(png, DO_SCP=True, KEEP_PNG=False,trans_mode='scp'):
     """ copies the png file to the website
     """
 
-    SCPCOMMAND_PLOTINT = 'scp -o ConnectTimeout=12 %s %s' % (png, config.SCPTARGET)
+    SCPCOMMAND_PLOTINT = '%s -o ConnectTimeout=12 %s %s' % (trans_mode, png, config.SCPTARGET)
 
     if DO_SCP:
         try:

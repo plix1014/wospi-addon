@@ -229,7 +229,7 @@ def main():
         fromYear  = fromDate.year
         prepareSoCTemperature(fromDay, fromMonth, fromYear, toDay, toMonth, toYear, soc, '24h')
         plotSoCTemp(soc,wospi.PLOTSOCTEMP24HTITLE)
-        uploadPNG(wospi.TMPPATH  + 'plot' + soc + '.png', DO_SCP, KEEP_PNG)
+        uploadPNG(wospi.TMPPATH  + 'plot' + soc + '.png', DO_SCP, KEEP_PNG, wospi.SCP)
 
 
         # part 2 : weekly plot
@@ -240,7 +240,7 @@ def main():
         soc = 'soctemp_week'
         prepareSoCTemperature(fromDay, fromMonth, fromYear, toDay, toMonth, toYear, soc, 'week')
         plotSoCTemp(soc,wospi.PLOTSOCTEMPTITLE)
-        uploadPNG(wospi.TMPPATH  + 'plot' + soc + '.png', DO_SCP, KEEP_PNG)
+        uploadPNG(wospi.TMPPATH  + 'plot' + soc + '.png', DO_SCP, KEEP_PNG, wospi.SCP)
 
 
         # part 3 : minmax plot
@@ -251,14 +251,14 @@ def main():
         fromYear  = fromDate.year
         prepareSoCTemperature(fromDay, fromMonth, fromYear, toDay, toMonth, toYear, soc, 'minmax')
         plotSoCTemp(soc,wospi.PLOTSOCTEMPMINMAXTITLE)
-        uploadPNG(wospi.TMPPATH  + 'plot' + soc + '.png', DO_SCP, KEEP_PNG)
+        uploadPNG(wospi.TMPPATH  + 'plot' + soc + '.png', DO_SCP, KEEP_PNG, wospi.SCP)
 
 
         # part 4 : full plot, from* and to* parameters are ignored
         soc = 'soctemp_full'
         prepareSoCTemperature(fromDay, fromMonth, fromYear, toDay, toMonth, toYear, soc, 'full')
         plotSoCTemp(soc,wospi.PLOTSOCTEMPALLTITLE)
-        uploadPNG(wospi.TMPPATH  + 'plot' + soc + '.png', DO_SCP, KEEP_PNG)
+        uploadPNG(wospi.TMPPATH  + 'plot' + soc + '.png', DO_SCP, KEEP_PNG, wospi.SCP)
 
 
     except Exception as e:

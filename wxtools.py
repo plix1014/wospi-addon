@@ -121,7 +121,7 @@ def runGnuPlot(plt, KEEP_TMP=False, LEVEL1=False, LEVEL2=False):
     return el
 
 
-def uploadAny(inFile, DO_SCP=True, KEEP_IN=False,trans_mode):
+def uploadAny(inFile, DO_SCP=True, KEEP_IN=False, trans_mode='scp'):
     """ copies the any file to the website
     """
 
@@ -144,7 +144,7 @@ def uploadAny(inFile, DO_SCP=True, KEEP_IN=False,trans_mode):
     return
 
 
-def uploadPNG(png, DO_SCP=True, KEEP_PNG=False,trans_mode):
+def uploadPNG(png, DO_SCP=True, KEEP_PNG=False,trans_mode='scp'):
     """ copies the png file to the website
     """
 
