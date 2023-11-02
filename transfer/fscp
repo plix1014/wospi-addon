@@ -1,0 +1,111 @@
+#!/bin/bash
+#-------------------------------------------------------------------------------
+# Purpose:
+# simulate ftp command with scp syntax
+#  fscp == fake scp
+#
+# 1. create ~/.netrc
+#
+#   ---------------------------
+#    machine <ftp host>
+#      login <ftp user name>
+#      password <ftp password>
+#   ---------------------------
+#
+#    chmod 600 ~/.netrc
+#
+# 2. configure config.py
+#    set SCPTARGET parameter as if you are using scp
+#      SCPTARGET = '<ftp username>@<ftp host>:<remote server directory>'
+#
+# 3. copy script to /usr/local/bin/fscp
+# 4. replace for all 'SCPCOMMAND_XXX' scp by fscp
+#
+#
+# used for:
+#   WOSPi by Torkel M. Jodalen <tmj@bitwrap.no>
+#   http://www.annoyingdesigns.com  -  http://www.bitwrap.no
+#
+# Author:      Peter Lidauer <plix1014@gmail.com>
+#
+# Created:     10.04.2014
+# Copyright:   (c) Peter Lidauer 2014, 2018
+# Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
+#
+# 2018-07-23  new A1 webspace
+# 2022-11-13  new A1 webspace
+# --------------------------------------------------------------------
+
+# basis directory of WOSPi installation
+WOSPI_HOME=/home/wospi/wetter
+
+# only for testing
+DEBUG=
+
+USE_LOG=/var/log/wospi/fscp.log
+
+# --------------------------------------------------------------------
+[ ! -r "$WOSPI_HOME/config.py" ] && echo "ERROR: $WOSPI_HOME not found. configure script." && exit 10
+
+# get temp dir
+TMPDIR=$(grep ^TMPPATH $WOSPI_HOME/config.py \
+    | awk -F"=" '{print $2}' \
+    | sed -e 's, ,,g' -e "s,',,g")
+
+
+
+# --------------------------------------------------------------------
+
+if [ $# -ne 4 ]; then
+    echo "ERROR ${0##/*} dummy1 dummy2 FILE SCPTARGET"
+    exit 1
+fi
+
+# we only need parameter 3 and 4
+OUTFILE=$3
+SCPTARGET=$4
+
+REM_DIR=$(echo "$SCPTARGET"  | awk -F":" '{print $2}')
+
+# it could happen, that the useraccount already contains a '@'
+REM_HOST=$(echo "$SCPTARGET" \
+    | awk -F":" '{print $1}' \
+    | awk -F"@" '{print $NF}')
+
+
+# just to make it complete. We don't need REM_USER really, as we use .netrc
+REM_USER=$(echo "$SCPTARGET" \
+    | awk -F"@" '{if (NF > 2) {
+           print $1"@"$2
+       } else {
+           print $1}
+       }')
+
+# --------------------------------------------------------------------
+
+if [ $DEBUG ]; then
+    echo "  remote dir : $REM_DIR"
+    echo "  outfile    : $OUTFILE"
+    echo "  remote_user: $REM_USER"
+    echo "  remote_host: $REM_HOST"
+fi
+
+cd $TMPDIR
+
+[ ! -r "$OUTFILE" ] && echo "$(date +'%a %b %d %T %Y LT:') ERROR: $OUTFILE not found." && exit 11
+
+if [ $DEBUG ]; then
+    echo "$(date +'%a %b %d %T %Y LT:') INFO : transferring $OUTFILE to $REM_HOST:$REM_DIR" | tee -a $USE_LOG
+else
+    echo "$(date +'%a %b %d %T %Y LT:') INFO : transferring $OUTFILE to $REM_HOST:$REM_DIR"
+fi
+
+TRANS_FILE=${OUTFILE##*/}
+
+lftp $REM_HOST <<-EOF
+	cd $REM_DIR
+	put $TRANS_FILE
+	bye
+	quit
+	EOF
+
