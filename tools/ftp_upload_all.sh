@@ -19,6 +19,7 @@
 #   PLI, 03.01.2016: wxdata path change
 #   PLI, 28.07.2018: get ftp server from config.py
 #   PLI, 22.10.2023: get LOCAL_TMP_DIR
+#   PLI, 02.11.2023: add TRANSFER_MODE
 #-------------------------------------------------------------------------------
 #
 
@@ -56,9 +57,14 @@ LOCAL_TMP_DIR=$(grep ^LOCAL_TMP_DIR $WOSPI/wetter/config.py \
     | sed -e 's,TMPPATH,$TMPDIR,g' \
     | tr '+' '/')
 
-SCPTARGET=$(grep ^FSCPTARGET $WOSPI/wetter/config.py \
+SCPTARGET=$(grep ^SCPTARGET $WOSPI/wetter/config.py \
     | awk -F"=" '{print $2}' \
     | tail -1 \
+    | sed -e 's, ,,g' -e "s,',,g")
+
+TRANSFER_MODE=$(grep ^SCP $WOSPI/wetter/config.py \
+    | egrep -v "SCPTARGET|SCPCOMMAND" \
+    | awk -F"=" '{print $2}'  \
     | sed -e 's, ,,g' -e "s,',,g")
 
 REM_DIR=$(echo "$SCPTARGET"  | awk -F":" '{print $2}')
@@ -87,7 +93,7 @@ if [ $RUN_ATWN -eq 1 ]; then
 fi
 
 
-if [ $RUN_UPD -eq 1 ]; then
+if [ $RUN_UPD -eq 1 -a "$TRANSFER_MODE" = "fscp" ]; then
     echo "$(date)"
     echo
     echo "# 3 # transfer all to $REM_HOST:$REM_DIR"

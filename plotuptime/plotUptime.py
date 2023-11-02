@@ -231,7 +231,7 @@ def uploadPNG(png):
     """ copies the png file to the website
     """
 
-    SCPCOMMAND_PLOTUPTIME = 'fscp -o ConnectTimeout=12 %s %s' % (png, wospi.FSCPTARGET)
+    SCPCOMMAND_PLOTUPTIME = '%s -o ConnectTimeout=12 %s %s' % (wospi.SCP, png, wospi.SCPTARGET)
 
     if DO_SCP:
         try:

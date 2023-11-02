@@ -73,7 +73,7 @@ import os, sys, shutil, re
 import time, string
 import getopt
 from datetime import date, timedelta, datetime
-from config import TMPPATH, HOMEPATH, CSVPATH, CSVFILESUFFIX, FSCPTARGET
+from config import TMPPATH, HOMEPATH, CSVPATH, CSVFILESUFFIX, SCPTARGET, SCP
 
 # numpy and panda for data structure
 import pandas as pd
@@ -454,7 +454,7 @@ def save_html(df,key):
         f.write(df.to_html(header=True,classes='df',float_format=lambda x: '%10.2f' % x))
         f.close()
 
-    uploadAny(out, DO_SCP, KEEP_TMP)
+    uploadAny(out, DO_SCP, KEEP_TMP, SCP)
 
 
 def save_labels(year):
@@ -653,7 +653,7 @@ def main():
 
         pkey = '_uv'
         plotUVstats(pkey)
-        uploadPNG(TMPPATH  + 'plotuvindex_' + key + '.png', DO_SCP, KEEP_PNG)
+        uploadPNG(TMPPATH  + 'plotuvindex_' + key + '.png', DO_SCP, KEEP_PNG, SCP)
 
         if not KEEP_TMP:
             if (os.path.isfile(statout_d)):

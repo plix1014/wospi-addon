@@ -46,7 +46,7 @@ from images2gif import writeGif
 from fnmatch import fnmatch
 import imghdr
 
-from config import SCPTARGET
+from config import SCPTARGET, SCP
 
 # font for watermark text
 #FONT = 'DejaVuSans.ttf'
@@ -151,7 +151,7 @@ def uploadGIF(gif):
     """ copies the radar gif file to the website
     """
 
-    SCPCOMMAND_PLOTGIF = 'fscp -o ConnectTimeout=12 %s %s' % (gif, SCPTARGET)
+    SCPCOMMAND_PLOTGIF = '%s -o ConnectTimeout=12 %s %s' % (SCP, gif, SCPTARGET)
 
     if DO_SCP:
         try:

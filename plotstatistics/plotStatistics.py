@@ -78,7 +78,7 @@ import os, sys, shutil, re
 import time, string
 import getopt
 from datetime import date, timedelta, datetime
-from config import TMPPATH, HOMEPATH, CSVPATH, CSVFILESUFFIX, SCPTARGET
+from config import TMPPATH, HOMEPATH, CSVPATH, CSVFILESUFFIX, SCPTARGET, SCP
 
 # numpy and panda for data structure
 import pandas as pd
@@ -868,7 +868,7 @@ def save_html(df,key,tm):
         f.write(df.to_html(header=True,classes='df',float_format=lambda x: '%10.2f' % x))
         f.close()
 
-    uploadAny(out, DO_SCP, KEEP_TMP)
+    uploadAny(out, DO_SCP, KEEP_TMP, SCP)
     return
 
 

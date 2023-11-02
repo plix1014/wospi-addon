@@ -35,7 +35,7 @@ import pandas as pd
 
 # wospi config and prepare functions
 import wospi
-from config import TMPPATH, HOMEPATH, CSVPATH, CSVFILESUFFIX, FSCPTARGET
+from config import TMPPATH, HOMEPATH, CSVPATH, CSVFILESUFFIX, SCPTARGET, SCP
 
 # for resizing the image
 import PIL
@@ -361,7 +361,7 @@ def uploadPNG(png):
     """ copies the png file to the website
     """
 
-    SCPCOMMAND_PLOTWIND = 'fscp -o ConnectTimeout=12 %s %s' % (png, FSCPTARGET)
+    SCPCOMMAND_PLOTWIND = '%s -o ConnectTimeout=12 %s %s' % (SCP, png, SCPTARGET)
 
     if DO_SCP:
         try:
