@@ -31,7 +31,8 @@
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
 # Changes:
-#  PLI, 02.11.2023: adjustments for container image
+#  PLI, 30.10.2023: adjustments for container image
+#  PLI, 02.11.2023: add watermark color
 #
 
 import sys, os
@@ -45,7 +46,7 @@ from images2gif import writeGif
 from fnmatch import fnmatch
 import imghdr
 
-from config import FSCPTARGET
+from config import SCPTARGET
 
 # font for watermark text
 #FONT = 'DejaVuSans.ttf'
@@ -91,12 +92,19 @@ def add_watermark(in_file, text, out_file='watermark.jpg', angle=0, opacity=0.8)
     draw = ImageDraw.Draw(watermark, 'RGBA')
     draw.text(((watermark.size[0] - n_width) / 10,
                (watermark.size[1] - n_height) / 100),
-    text, font=n_font)
+    text, font=n_font, fill = (0,0,255,255))
     watermark = watermark.rotate(angle,Image.BICUBIC)
     alpha = watermark.split()[3 ]
     alpha = ImageEnhance.Brightness(alpha).enhance(opacity)
     watermark.putalpha(alpha)
     Image.composite(watermark, img, watermark,).save(out_file, 'JPEG')
+
+
+def make_gif(outgif,frames,duration,loop):
+    # https://www.blog.pythonlibrary.org/2021/06/23/creating-an-animated-gif-with-python/
+    frame_one = frames[0]
+    frame_one.save(outgif, format="GIF", append_images=frames,
+               save_all=True, duration=duration, loop=loop)
 
 
 def animate_gif(in_dir,in_mask):
@@ -120,7 +128,10 @@ def animate_gif(in_dir,in_mask):
         for n in images:
             print_dbg(DEBUG, "DEBUG: image: %s" % n)
 
-        writeGif(outgif, images, duration=2.0, repeat=True, dither=False)
+        # 2023-11-02: it created broken gif "GIF image is corrupt (incorrect LZW compression)"
+        #writeGif(outgif, images, duration=2.0, repeat=True, dither=False)
+        # alternate method
+        make_gif(outgif, images, duration=2000, loop=0)
 
     except Exception as e:
         print_dbg(True, 'ERROR: could not create %s: %s.' % (outgif,e))
@@ -140,7 +151,7 @@ def uploadGIF(gif):
     """ copies the radar gif file to the website
     """
 
-    SCPCOMMAND_PLOTGIF = 'fscp -o ConnectTimeout=12 %s %s' % (gif, FSCPTARGET)
+    SCPCOMMAND_PLOTGIF = 'fscp -o ConnectTimeout=12 %s %s' % (gif, SCPTARGET)
 
     if DO_SCP:
         try:
