@@ -202,9 +202,9 @@ DEBUG= False
 TRACE= True
 
 # keep png files after upload
-KEEP_PNG = True
+KEEP_PNG = False
 # keep temporary files
-KEEP_TMP = True
+KEEP_TMP = False
 # upload png and inc
 DO_SCP   = True
 
