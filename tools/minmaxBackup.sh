@@ -71,9 +71,9 @@ MINMAXFILE=$(grep ^MINMAXFILE $WOSPI_HOME/config.py \
     | sed -e "s,',,g" | awk -F"+" '{print $2}' | awk '{print $1}')
 
 
-TMP=$(grep "^SCPTARGET" $WOSPI_HOME/config.py \
+TMP=$(grep "^LOCAL_TMP_DIR" $WOSPI_HOME/config.py \
     | awk -F"=" '{print $2}' \
-    | sed -e 's,^.*:,,g' -e "s,',,g")
+    | sed -e 's,^.*:,,g' -e "s,',,g" -e 's,^ ,,g')
 
 
 LASTDAY=$($CAL $OPT $MMYY | tail -n +3 | tr '\n' ' ' | sort -n | awk 'END {print $NF}')
@@ -102,7 +102,8 @@ else
     echo "$YY-$MM-$DD: today is not the last day of month. Nothing to do."
 fi
 
-cd $TMP
+#cd $TMP
+cd $TMPDIR
 if [ $(ls *.png > /dev/null 2>&1) ]; then
     echo "$YY-$MM-$DD: backup png files"
     echo "----------------------"
