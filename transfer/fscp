@@ -37,7 +37,7 @@
 # --------------------------------------------------------------------
 
 # basis directory of WOSPi installation
-WOSPI_HOME=/home/wospi/wetter
+WOSPI_HOME=${HOMEPATH:-/home/wospi/wetter}
 
 # only for testing
 DEBUG=
@@ -45,7 +45,7 @@ DEBUG=
 USE_LOG=/var/log/wospi/fscp.log
 
 # --------------------------------------------------------------------
-[ ! -r "$WOSPI_HOME/config.py" ] && echo "ERROR: $WOSPI_HOME not found. configure script." && exit 10
+[ ! -r "$WOSPI_HOME/config.py" ] && echo "$(date +'%a %b %e %T %Y LT:') ERROR: path $WOSPI_HOME not found. configure script." && exit 10
 
 # get temp dir
 TMPDIR=$(grep ^TMPPATH $WOSPI_HOME/config.py \
