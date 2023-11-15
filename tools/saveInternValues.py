@@ -16,7 +16,15 @@
 # Copyright:   (c) Peter Lidauer 2016
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 15.11.2023: read HOMEPATH from environment
+#
+
 import sys, re, time, subprocess, os
+
+CONFIG_HOME = os.environ.get('HOMEPATH')
+sys.path.append(CONFIG_HOME + '/')
+
 from datetime import datetime, date
 from config import CSVPATH, HOMEPATH, INTFILE, MINMAXFILE, TEMPERATUREFILE, read_txtfile
 import Adafruit_DHT

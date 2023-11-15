@@ -16,7 +16,15 @@
 # Copyright:   (c) Peter Lidauer 2016
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
-import sys, subprocess
+# Changes:
+#  PLI, 15.11.2023: read HOMEPATH from environment
+#
+
+import sys, os, subprocess
+
+CONFIG_HOME = os.environ.get('HOMEPATH')
+sys.path.append(CONFIG_HOME + '/')
+
 from datetime import timedelta, datetime, date
 from time import time
 from config import CSVPATH

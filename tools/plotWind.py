@@ -23,11 +23,13 @@
 #-------------------------------------------------------------------------------
 # Changes:
 #  PLI, 24.10.2023: remove debug code
+#  PLI, 15.11.2023: read HOMEPATH from environment
 #
 
 import sys,os, shutil
 
-sys.path.append('/home/wospi/wetter/')
+CONFIG_HOME = os.environ.get('HOMEPATH')
+sys.path.append(CONFIG_HOME + '/')
 
 # datetime and panda for data structure
 from datetime import datetime, timedelta, date
