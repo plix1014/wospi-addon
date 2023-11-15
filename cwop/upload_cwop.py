@@ -53,7 +53,7 @@ from __future__ import print_function
 import sys,os
 
 CONFIG_HOME = os.environ.get('HOMEPATH')
-sys.path.append(CONFIG_HOME + '/')
+sys.path.append(CONFIG_HOME)
 
 import socket
 import sys

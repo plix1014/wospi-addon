@@ -29,7 +29,7 @@
 import sys,os, shutil
 
 CONFIG_HOME = os.environ.get('HOMEPATH')
-sys.path.append(CONFIG_HOME + '/')
+sys.path.append(CONFIG_HOME)
 
 # datetime and panda for data structure
 from datetime import datetime, timedelta, date

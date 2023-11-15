@@ -23,7 +23,7 @@
 import sys, os, subprocess
 
 CONFIG_HOME = os.environ.get('HOMEPATH')
-sys.path.append(CONFIG_HOME + '/')
+sys.path.append(CONFIG_HOME)
 
 from datetime import timedelta, datetime, date
 from time import time

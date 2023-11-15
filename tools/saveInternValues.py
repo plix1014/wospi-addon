@@ -23,7 +23,7 @@
 import sys, re, time, subprocess, os
 
 CONFIG_HOME = os.environ.get('HOMEPATH')
-sys.path.append(CONFIG_HOME + '/')
+sys.path.append(CONFIG_HOME)
 
 from datetime import datetime, date
 from config import CSVPATH, HOMEPATH, INTFILE, MINMAXFILE, TEMPERATUREFILE, read_txtfile
