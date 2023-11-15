@@ -33,9 +33,14 @@
 # Changes:
 #  PLI, 30.10.2023: adjustments for container image
 #  PLI, 02.11.2023: add watermark color
+#  PLI, 15.11.2023: read HOMEPATH from environment
 #
 
 import sys, os
+
+CONFIG_HOME = os.environ.get('HOMEPATH')
+sys.path.append(CONFIG_HOME + '/')
+
 import urllib
 import time
 from datetime import datetime, timedelta, date
