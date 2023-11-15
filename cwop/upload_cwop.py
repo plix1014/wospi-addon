@@ -44,8 +44,16 @@
 # Copyright:   (c) Peter Lidauer 2015
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 15.11.2023: read HOMEPATH from environment
+#
 
 from __future__ import print_function
+
+import sys,os
+
+CONFIG_HOME = os.environ.get('HOMEPATH')
+sys.path.append(CONFIG_HOME + '/')
 
 import socket
 import sys
@@ -55,7 +63,6 @@ import pytz
 import re
 import csv
 import config
-import os
 
 
 # cwop passcode
