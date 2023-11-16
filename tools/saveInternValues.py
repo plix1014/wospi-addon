@@ -20,7 +20,7 @@
 #  PLI, 15.11.2023: read HOMEPATH from environment
 #
 
-import sys, re, time, subprocess, os
+import sys, os, re, time, subprocess, os
 
 CONFIG_HOME = os.environ.get('HOMEPATH')
 sys.path.append(CONFIG_HOME)
