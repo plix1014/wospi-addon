@@ -20,13 +20,21 @@
 #  PLI, 15.11.2023: read HOMEPATH from environment
 #
 
-import sys, os, re, time, subprocess, os
+import sys, os, subprocess
+from dotenv import load_dotenv
 
+ENVFILE = '/tmp/.env'
+
+load_dotenv(ENVFILE)
 CONFIG_HOME = os.environ.get('HOMEPATH')
 sys.path.append(CONFIG_HOME)
 
+HOMEPATH = CONFIG_HOME
+
 from datetime import datetime, date
-from config import CSVPATH, HOMEPATH, INTFILE, MINMAXFILE, TEMPERATUREFILE, read_txtfile
+import re, time
+#from config import CSVPATH, HOMEPATH, INTFILE, MINMAXFILE, TEMPERATUREFILE, read_txtfile
+from config import CSVPATH, INTFILE, MINMAXFILE, TEMPERATUREFILE, read_txtfile
 import Adafruit_DHT
 
 #CSVOUT = CSVPATH + 'internal.csv'
