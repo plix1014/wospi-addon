@@ -163,19 +163,15 @@ def main():
         # save year for gnuplot file
         save_labels(fromYear)
 
-        if (sys.platform == "win32" ):
-            gnuplot = 'c:\\MyApps\\gnuplot\\bin\\gnuplot.exe'
-            os.system(gnuplot + ' ' + gpcfile)
-        else:
-            gnuplot = '/usr/bin/gnuplot'
-            os.system(gnuplot + ' ' + gpcfile + ' 2> /dev/null')
+        gnuplot = '/usr/bin/gnuplot'
+        os.system(gnuplot + ' ' + gpcfile + ' 2> /dev/null')
 
 
 
         png_year = wospi.TMPPATH  + pngname + '_' + str(fromYear) + '.png'
         print_dbg(True, "INFO : Result file: %s" % png_year)
 
-        uploadPNG(png_year, DO_SCP, KEEP_PNG)
+        uploadPNG(png_year, DO_SCP, KEEP_PNG, wospi.SCP)
 
         if not KEEP_TMP:
             if (os.path.isfile(tmpfile)):

@@ -1056,7 +1056,7 @@ def main():
 
         pkey = 'temp_year'
         plotStatistics(pkey,'t')
-        uploadPNG(TMPPATH  + 'plottemp_' + key + '.png', DO_SCP, KEEP_PNG)
+        uploadPNG(TMPPATH  + 'plottemp_' + key + '.png', DO_SCP, KEEP_PNG, SCP)
 
         prepareCSVDataRain(fromMonth,fromYear, statdata_r)
         wr_r = read_rx_csv(statdata_r,fromDay,fromMonth,fromYear,'00',toDay,toMonth,toYear,has_cmdf)
@@ -1066,7 +1066,7 @@ def main():
 
         pkey = 'monthlyrain'
         plotStatistics(pkey,'t')
-        uploadPNG(TMPPATH  + 'monthlyrain_' + key + '.png', DO_SCP, KEEP_PNG)
+        uploadPNG(TMPPATH  + 'monthlyrain_' + key + '.png', DO_SCP, KEEP_PNG, SCP)
         if not KEEP_TMP:
             if (os.path.isfile(statout_d)):
                 os.unlink(statout_d)
