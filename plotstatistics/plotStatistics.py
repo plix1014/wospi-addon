@@ -72,6 +72,7 @@
 #    v1.3:     changes for new pandas version (resample)
 #    v1.4:     add rainstatistics
 #    v1.5:     add dropna() to fix the MinTemperatur during the current month
+#    v1.6:     exclude 'do_fill' in December
 #-------------------------------------------------------------------------------
 
 import os, sys, shutil, re
@@ -202,11 +203,11 @@ DEBUG= False
 TRACE= True
 
 # keep png files after upload
-KEEP_PNG = False
+KEEP_PNG = True
 # keep temporary files
 KEEP_TMP = False
 # upload png and inc
-DO_SCP   = True
+DO_SCP   = False
 
 #-------------------------------------------------------------------------------
 
@@ -356,7 +357,7 @@ def read_wx_csv(wxin,fromDay,fromMonth,fromYear,fromHour,toDay,toMonth,toYear, d
 
     # fill future month records with empty data
     # to have a even plotted chart (needs commandline option 'f')
-    if do_fill:
+    if do_fill and int(datetime.now().month) < 12:
         fillMonth = datetime.now().month + 1
         print_dbg(True, "INFO : fill future months with empty data (%s - 12)" % fillMonth)
         for n in range(fillMonth,13):
@@ -421,7 +422,7 @@ def read_rx_csv(rxin,fromDay,fromMonth,fromYear,fromHour,toDay,toMonth,toYear, d
 
     # fill future month records with empty data
     # to have a even plotted chart (needs commandline option 'f')
-    if do_fill:
+    if do_fill and int(datetime.now().month) < 12:
         fillMonth = datetime.now().month + 1
         print_dbg(True, "INFO : fill future months with empty data (%s - 12)" % fillMonth)
         for n in range(fillMonth,13):
