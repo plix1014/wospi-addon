@@ -479,10 +479,7 @@ def save_labels(year):
 def plotUVstats(plt):
     """ create plot file from template and start gnuplot
     """
-    if (sys.platform == "win32" ):
-        inFile  = HOMEPATH + 'plot' + plt + '.win'
-    else:
-        inFile  = HOMEPATH + 'plot' + plt + '.input'
+    inFile  = HOMEPATH + 'plot' + plt + '.input'
     outFile = TMPPATH  + 'plot' + plt + '.plt'
 
     print_dbg(True,"INFO : plot statistics with " + plt)

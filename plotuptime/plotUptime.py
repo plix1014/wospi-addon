@@ -163,10 +163,7 @@ def runGnuPlot(plt):
 
     inFile = wospi.TMPPATH + 'plot' + plt + '.plt'
 
-    if (sys.platform == "win32" ):
-        gnuplot = 'c:\\MyApps\\gnuplot\\bin\\gnuplot.exe'
-    else:
-        gnuplot = '/usr/bin/gnuplot'
+    gnuplot = '/usr/bin/gnuplot'
 
     if os.path.exists(gnuplot):
         print_dbg(DEBUG,"DEBUG: runGnuPlot: plot png " + plt)
