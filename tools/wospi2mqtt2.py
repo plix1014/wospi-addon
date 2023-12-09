@@ -139,16 +139,20 @@ def reread_xml():
     global MQTT_MSG_UVINDEX
     global MQTT_MSG_ALL
 
-    WXDATA = parseXML(WXIN)
+    if os.path.exists(WXIN):
+        WXDATA = parseXML(WXIN)
 
-    if WXDATA:
-        MQTT_MSG_OTEMP      = json.dumps({"outtemp_c"     : WXDATA['outtemp_c']});
-        MQTT_MSG_ITEMP      = json.dumps({"intemp_c"      : WXDATA['intemp_c']});
-        MQTT_MSG_PRESSURE   = json.dumps({"barometer_hpa" : WXDATA['barometer_hpa']});
-        MQTT_MSG_RAINFALL24 = json.dumps({"rainfall24h_mm": WXDATA['rainfall24h_mm']});
-        MQTT_MSG_DAYRAIN    = json.dumps({"dayrain_mm"    : WXDATA['dayrain_mm']});
-        MQTT_MSG_UVINDEX    = json.dumps({"uvindex"       : WXDATA['uvindex']});
-        MQTT_MSG_ALL        = json.dumps(WXDATA);
+        if WXDATA:
+            MQTT_MSG_OTEMP      = json.dumps({"outtemp_c"     : WXDATA['outtemp_c']});
+            MQTT_MSG_ITEMP      = json.dumps({"intemp_c"      : WXDATA['intemp_c']});
+            MQTT_MSG_PRESSURE   = json.dumps({"barometer_hpa" : WXDATA['barometer_hpa']});
+            MQTT_MSG_RAINFALL24 = json.dumps({"rainfall24h_mm": WXDATA['rainfall24h_mm']});
+            MQTT_MSG_DAYRAIN    = json.dumps({"dayrain_mm"    : WXDATA['dayrain_mm']});
+            MQTT_MSG_UVINDEX    = json.dumps({"uvindex"       : WXDATA['uvindex']});
+            MQTT_MSG_ALL        = json.dumps(WXDATA);
+    else:
+        print_dbg(INFO, "Input file '%s' currently not available" % (WXIN))
+
 
 
 def initialize():
