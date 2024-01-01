@@ -50,7 +50,7 @@ KEEP_PNG = True
 # keep temporary files
 KEEP_TMP = False
 # upload png and inc
-DO_SCP   = False
+DO_SCP   = True
 
 # -----------------------------------------------------------------------------------------------------------
 def findPrevRainPerMonth(minYear, maxYear):
