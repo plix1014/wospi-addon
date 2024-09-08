@@ -115,6 +115,9 @@ YEAR=${3:-$(date '+%Y')}
 
 
 # normalize input
+MONTH=$(echo $MONTH | bc)
+DAY=$(echo $DAY | bc)
+
 if [ $MONTH -lt 10 ]; then
     MONTH="0${MONTH}"
 fi
