@@ -35,7 +35,7 @@ from datetime import datetime, date
 import re, time
 #from config import CSVPATH, HOMEPATH, INTFILE, MINMAXFILE, TEMPERATUREFILE, read_txtfile
 from config import CSVPATH, INTFILE, MINMAXFILE, TEMPERATUREFILE, read_txtfile
-import Adafruit_DHT
+#import Adafruit_DHT
 
 #CSVOUT = CSVPATH + 'internal.csv'
 
