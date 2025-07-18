@@ -169,7 +169,7 @@ def initialize():
     mqttc.on_disconnect = on_disconnect
 
     # Connect with MQTT Broker
-    mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
+    mqttc.connect(MQTT_HOST, int(MQTT_PORT), int(MQTT_KEEPALIVE_INTERVAL))
 
     return mqttc
 
