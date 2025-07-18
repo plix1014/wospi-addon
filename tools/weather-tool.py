@@ -12,6 +12,8 @@
 # Copyright:   (c) Peter Lidauer 2015
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 18.07.2025: changes for python3
 
 import getopt
 import sys
@@ -94,28 +96,28 @@ def c2kelvin(T):
 def usage(EL=10):
     """ usage for this program
     """
-    print " select result type"
-    print "  -r (result) {type}     ... result of calculation"
-    print "        heatindex        ... heat index calculation"
-    print "        hi_txt           ... descriptiv heat index"
-    print "        humidex          ... canadian humidex calculation"
-    print "        hu_txt           ... descriptiv canadian humidex"
-    print "        ssi              ... summer-simmer-index"
-    print "        ssi_txt          ... descriptiv summer-simmer-index"
-    print "        THW              ... THW index"
-    print "        THSW             ... THSW index"
-    print "        dewpoint         ... dewpoint calculation"
-    print "        humidity         ... relativ humidity calculation"
-    print "        windchill        ... windchill calculation\n"
+    print(" select result type")
+    print("  -r (result) {type}     ... result of calculation")
+    print("        heatindex        ... heat index calculation")
+    print("        hi_txt           ... descriptiv heat index")
+    print("        humidex          ... canadian humidex calculation")
+    print("        hu_txt           ... descriptiv canadian humidex")
+    print("        ssi              ... summer-simmer-index")
+    print("        ssi_txt          ... descriptiv summer-simmer-index")
+    print("        THW              ... THW index")
+    print("        THSW             ... THSW index")
+    print("        dewpoint         ... dewpoint calculation")
+    print("        humidity         ... relativ humidity calculation")
+    print("        windchill        ... windchill calculation\n")
 
-    print " input values, depending of type selection"
-    print "  -t (temp)     {deg }   ... current air temperature"
-    print "  -m (rhum)     {hum %}  ... humidity"
-    print "  -d (dewpoint) {deg }   ... dewpoint"
-    print "  -w (wind)     {kmh }   ... windspeed\n"
+    print(" input values, depending of type selection")
+    print("  -t (temp)     {deg }   ... current air temperature")
+    print("  -m (rhum)     {hum %}  ... humidity")
+    print("  -d (dewpoint) {deg }   ... dewpoint")
+    print("  -w (wind)     {kmh }   ... windspeed\n")
 
-    print "  -u (unit) {c|f}        ... [c]elsius (is default) or [f]ahrenheit"
-    print "  -h (help)              ... this help screen\n"
+    print("  -u (unit) {c|f}        ... [c]elsius (is default) or [f]ahrenheit")
+    print("  -h (help)              ... this help screen\n")
 
     sys.exit(EL)
     return
@@ -145,16 +147,16 @@ def heat_c(h_tf,h_rh):
     h_rh = rh_limit(float(h_rh))
 
     if (h_tf >= 24):
-	return (-8.784695 + 1.61139411 * h_tf
-	+ 2.338549 * h_rh
-	- 0.14611605 * h_tf * h_rh
-	- (1.2308094 * 10**(-2)) * (h_tf**(2))
-	- (1.6424828 * 10**(-2)) * (h_rh**(2))
-	+ (2.211732 * 10**(-3)) * (h_tf**(2)) * h_rh
-	+ (7.2546 * 10**(-4)) * h_tf * (h_rh**(2))
-	- (3.582 * 10**(-6)) * (h_tf**(2.0)) * (h_rh**(2.0)))
+        return (-8.784695 + 1.61139411 * h_tf
+                + 2.338549 * h_rh
+                - 0.14611605 * h_tf * h_rh
+                - (1.2308094 * 10**(-2)) * (h_tf**(2))
+                - (1.6424828 * 10**(-2)) * (h_rh**(2))
+                + (2.211732 * 10**(-3)) * (h_tf**(2)) * h_rh
+                + (7.2546 * 10**(-4)) * h_tf * (h_rh**(2))
+                - (3.582 * 10**(-6)) * (h_tf**(2.0)) * (h_rh**(2.0)))
     else:
-	return h_tf
+        return h_tf
 
 
 def heat_f(h_tf,h_rh):
@@ -168,7 +170,7 @@ def heat_f(h_tf,h_rh):
     h_rh = rh_limit(float(h_rh))
 
     if (h_tf >= 75):
-	return (-42.379 + 2.04901523 * h_tf
+        return (-42.379 + 2.04901523 * h_tf
             + 10.14333127 * h_rh
             - 0.22475541 * h_tf * h_rh
             - (6.83783 * 10**(-3)) * (h_tf**(2))
@@ -177,7 +179,7 @@ def heat_f(h_tf,h_rh):
             + (8.5282 * 10**(-4)) * h_tf * (h_rh**(2))
             - (1.99 * 10**(-6)) * (h_tf**(2)) * (h_rh**(2)))
     else:
-	return h_tf
+        return h_tf
 
 def heatdew_f(tair,tdew):
     """ calculate heatindex from temperature and dewpoint
@@ -388,34 +390,34 @@ def calc_humidex_txt(TAIR,RHUM,CELSIUS=True):
 
 
     if CELSIUS:
-	humidex_c = humidex(TAIR,RHUM)
+        humidex_c = humidex(TAIR,RHUM)
     else:
-	humidex_c = humidex(f_to_c(TAIR),RHUM)
+        humidex_c = humidex(f_to_c(TAIR),RHUM)
 
 
     if ( humidex_c <  29):
         # Stufe 1
-	comment_en = "Little or no discomfort."
+        comment_en = "Little or no discomfort."
         comment_de = "Keine Beschwerden"
     if ((humidex_c >= 29) and (humidex_c < 34)):
         # Stufe 2
-	comment_en = "Noticeable discomfort"
-	comment_de = "Leichtes Unbehagen";
+        comment_en = "Noticeable discomfort"
+        comment_de = "Leichtes Unbehagen";
     if ((humidex_c >= 34) and (humidex_c < 39)):
         # Stufe 3
-	comment_en = "Evident discomfort"
+        comment_en = "Evident discomfort"
         comment_de = "Vorsicht: Starkes Unbehagen";
     if ((humidex_c >= 39) and (humidex_c < 45)):
         # Stufe 4
-	comment_en = "Intense discomfort; avoid exertion"
+        comment_en = "Intense discomfort; avoid exertion"
         comment_de = "Erhoehte Vorsicht: Starkes Unwohlsein";
     if ((humidex_c >= 45) and (humidex_c < 54)):
         # Stufe 5
-	comment_en = "Dangerous discomfort"
-	comment_de = "Erhoehte Gefahr";
+        comment_en = "Dangerous discomfort"
+        comment_de = "Erhoehte Gefahr";
     if ( humidex_c >= 54):
         # Stufe 6
-	comment_en = "Heat stroke probable"
+        comment_en = "Heat stroke probable"
         comment_de = "Sehr ernste Gefahr: Hitzeschlag und Sonnestich sind wahrscheinlich";
 
     if LANG_DE:
@@ -424,7 +426,7 @@ def calc_humidex_txt(TAIR,RHUM,CELSIUS=True):
         comment = comment_en
 
     if DEBUG:
-        print "humidex: %.1f = %s" % (humidex_c,comment)
+        print("humidex: %.1f = %s" % (humidex_c,comment))
 
     return comment
 
@@ -435,31 +437,31 @@ def calc_heatindex_txt(TAIR,RHUM,CELSIUS=True):
     """
 
     if CELSIUS:
-	heat_idx_c = heat_c(TAIR,RHUM)
+        heat_idx_c = heat_c(TAIR,RHUM)
     else:
-	heat_idx_c = f_to_c(heat_c(TAIR,RHUM))
+        heat_idx_c = f_to_c(heat_c(TAIR,RHUM))
 
     if ( heat_idx_c <  27):
         # Stufe 1
-	comment_en = "Little or no discomfort."
+        comment_en = "Little or no discomfort."
         comment_de = "Keine Beschwerden"
 
     if ((heat_idx_c >= 27) and (heat_idx_c < 32)):
-	# Stufe 2
+        # Stufe 2
         comment_en = "Caution: Continuing activity could result in heat cramps."
-        comment_de = u"Vorsicht: Bei längeren Zeiträumen und körperlicher Aktivität kann es zu Erschöpfungserscheinungen kommen."
+        comment_de = "Vorsicht: Bei längeren Zeiträumen und körperlicher Aktivität kann es zu Erschöpfungserscheinungen kommen."
     if ((heat_idx_c >= 32) and (heat_idx_c < 41)):
-	# Stufe 3
+        # Stufe 3
         comment_en = "Extreme caution: Continuing activity could result in heat stroke."
-	comment_de = u"Erhöhte Vorsicht: Es besteht die Möglichkeit von Hitzeschäden wie Sonnenstich, Hitzekrampf und Hitzekollaps."
+        comment_de = "Erhöhte Vorsicht: Es besteht die Möglichkeit von Hitzeschäden wie Sonnenstich, Hitzekrampf und Hitzekollaps."
     if ((heat_idx_c >= 41) and (heat_idx_c < 54)):
-	# Stufe 4
+        # Stufe 4
         comment_en = "Danger: heat stroke is probable with continued activity"
-        comment_de = u"Gefahr: Sonnenstich, Hitzekrampf und Hitzekollaps sind wahrscheinlich; Hitzschlag ist möglich."
+        comment_de = "Gefahr: Sonnenstich, Hitzekrampf und Hitzekollaps sind wahrscheinlich; Hitzschlag ist möglich."
     if ( heat_idx_c >= 54):
-	# Stufe 5
+        # Stufe 5
         comment_en = "Extreme danger: Heat stroke is imminent."
-        comment_de = u"Erhöhte Gefahr: Hitzschlag und Sonnenstich sind wahrscheinlich."
+        comment_de = "Erhöhte Gefahr: Hitzschlag und Sonnenstich sind wahrscheinlich."
 
     if LANG_DE:
         comment = comment_de
@@ -467,59 +469,59 @@ def calc_heatindex_txt(TAIR,RHUM,CELSIUS=True):
         comment = comment_en
 
     if DEBUG:
-        print "heatidex: %.1f = %s" % (heat_idx_c,comment)
+        print("heatidex: %.1f = %s" % (heat_idx_c,comment))
 
     return comment
 
 
 def calc_SSI_txt(TAIR,RHUM,CELSIUS=True):
     """ shows a descriptiv text describing the SSI
-	http://myscope.net/hitzeindex-gefuehle-temperatur/
+        http://myscope.net/hitzeindex-gefuehle-temperatur/
     """
 
     if CELSIUS:
-	ssi = f_to_c(SSI_f(c_to_f(TAIR),RHUM))
+        ssi = f_to_c(SSI_f(c_to_f(TAIR),RHUM))
     else:
-	ssi = SSI_f(TAIR,RHUM)
+        ssi = SSI_f(TAIR,RHUM)
 
 
     if ( ssi <  21.3):
         # Stufe 0
-	comment_en = "Cool"
-        comment_de = u"Kühl"
+        comment_en = "Cool"
+        comment_de = "Kühl"
 
     if ((ssi >= 21.3) and (ssi < 25)):
-	# Stufe 1
+        # Stufe 1
         comment_en = "Slightly cool: Majority feels convenient."
-        comment_de = u"Etwas kühl. Die meisten Personen fühlen sich wohl."
+        comment_de = "Etwas kühl. Die meisten Personen fühlen sich wohl."
     if ((ssi >= 25) and (ssi < 28.3)):
-	# Stufe 2
-	comment_en = "Convenient: Almost anyone feels convenient."
-	comment_de = u"Optimal. Fast jeder fühlt sich wohl."
+        # Stufe 2
+        comment_en = "Convenient: Almost anyone feels convenient."
+        comment_de = "Optimal. Fast jeder fühlt sich wohl."
     if ((ssi >= 28.3) and (ssi < 32.8)):
-	# Stufe 3
+        # Stufe 3
         comment_en = "Slightly hot: Majority feels convenient."
-        comment_de = u"Etwas heiß. Die meisten Personen fühlen sich wohl."
+        comment_de = "Etwas heiß. Die meisten Personen fühlen sich wohl."
     if ((ssi >= 32.8) and (ssi < 37.8)):
-	# Stufe 4
-	comment_en = "Hot: Potential increased discomfort."
-        comment_de = u"Heiß. Teilweises Unwohlsein."
+        # Stufe 4
+        comment_en = "Hot: Potential increased discomfort."
+        comment_de = "Heiß. Teilweises Unwohlsein."
     if ((ssi >= 37.8) and (ssi < 44.4)):
-	# Stufe 5
-	comment_en = "Medium hot: Significant discomfort. Danger of sunstroke."
-        comment_de = u"Medium hot. Unwohlsein. Gefahr von Hitzeschlag."
+        # Stufe 5
+        comment_en = "Medium hot: Significant discomfort. Danger of sunstroke."
+        comment_de = "Medium hot. Unwohlsein. Gefahr von Hitzeschlag."
     if ((ssi >= 44.4) and (ssi < 51.7)):
-	# Stufe 6
-	comment_en = "Very hot: Severe discomfort. Danger of heat stroke."
-        comment_de = u"Sehr heiß. Gefahr von Hitzeschlag."
+        # Stufe 6
+        comment_en = "Very hot: Severe discomfort. Danger of heat stroke."
+        comment_de = "Sehr heiß. Gefahr von Hitzeschlag."
     if ((ssi >= 51.7) and (ssi < 65.6)):
-	# Stufe 7
-	comment_en = "Extreme hot: Maximum discomfort. Increased danger of heat stroke."
-        comment_de = u"Extrem Heiß. Sehr große Gefahr eines Hitzeschlages."
+        # Stufe 7
+        comment_en = "Extreme hot: Maximum discomfort. Increased danger of heat stroke."
+        comment_de = "Extrem Heiß. Sehr große Gefahr eines Hitzeschlages."
     if ( ssi >= 65.6):
-	# Stufe 8
-	comment_en = "Extreme hot: Maximum discomfort. Increased danger of heat stroke."
-        comment_de = u"Extrem Heiß. Sehr große Gefahr eines Hitzeschlages."
+        # Stufe 8
+        comment_en = "Extreme hot: Maximum discomfort. Increased danger of heat stroke."
+        comment_de = "Extrem Heiß. Sehr große Gefahr eines Hitzeschlages."
 
     if LANG_DE:
         comment = comment_de
@@ -527,7 +529,7 @@ def calc_SSI_txt(TAIR,RHUM,CELSIUS=True):
         comment = comment_en
 
     if DEBUG:
-        print "SSI     : %.1f = %s" % (ssi,comment)
+        print("SSI     : %.1f = %s" % (ssi,comment))
 
     return comment
 
@@ -536,12 +538,12 @@ def calc_THW(TAIR,RHUM,WIND,CELSIUS=True):
     # need to convert temp. if in F
     thw = 0
     if CELSIUS:
-	thw = f_to_c(THW_f(c_to_f(TAIR),RHUM,WIND))
+        thw = f_to_c(THW_f(c_to_f(TAIR),RHUM,WIND))
     else:
-	thw = THW_f(TAIR,RHUM,WIND)
+        thw = THW_f(TAIR,RHUM,WIND)
 
     if DEBUG:
-        print "THW    : %.1f" % thw
+        print("THW    : %.1f" % thw)
 
     return thw
 
@@ -550,12 +552,12 @@ def calc_humidex(TAIR,RHUM,CELSIUS=True):
     # need to convert temp. if in F
     hu = 0
     if CELSIUS:
-	hu = humidex(TAIR,RHUM)
+        hu = humidex(TAIR,RHUM)
     else:
-	hu = c_to_f(humidex(f_to_c(TAIR),RHUM))
+        hu = c_to_f(humidex(f_to_c(TAIR),RHUM))
 
     if DEBUG:
-        print "humidex: %.1f" % hu
+        print("humidex: %.1f" % hu)
 
     return hu
 
@@ -563,12 +565,12 @@ def calc_humidex(TAIR,RHUM,CELSIUS=True):
 def calc_dewpoint(TAIR,RHUM,CELSIUS=True):
     dp = 0
     if CELSIUS:
-	dp = dewpoint_c(TAIR,RHUM)
+        dp = dewpoint_c(TAIR,RHUM)
     else:
-	dp = c_to_f(dewpoint_c(f_to_c(TAIR),RHUM))
+        dp = c_to_f(dewpoint_c(f_to_c(TAIR),RHUM))
 
     if DEBUG:
-        print "dewpoint: %.1f" % dp
+        print("dewpoint: %.1f" % dp)
 
     return dp
 
@@ -576,12 +578,12 @@ def calc_dewpoint(TAIR,RHUM,CELSIUS=True):
 def calc_windchill(TAIR,WIND,CELSIUS=True):
     wct = 0
     if CELSIUS:
-	wct = windchill_c(TAIR,WIND)
+        wct = windchill_c(TAIR,WIND)
     else:
-	wct = windchill_f(TAIR,WIND)
+        wct = windchill_f(TAIR,WIND)
 
     if DEBUG:
-        print "windchill: %.1f" % wct
+        print("windchill: %.1f" % wct)
 
     return wct
 
@@ -589,12 +591,12 @@ def calc_windchill(TAIR,WIND,CELSIUS=True):
 def calc_humidity(TAIR,TDEWP,CELSIUS):
     r = 0
     if CELSIUS:
-	r = humidity_c(TAIR,TDEWP)
+        r = humidity_c(TAIR,TDEWP)
     else:
-	r = c_to_f(humidity_c(f_to_c(TAIR),f_to_c(TDEWP)))
+        r = c_to_f(humidity_c(f_to_c(TAIR),f_to_c(TDEWP)))
 
     if DEBUG:
-        print "humidity: %.1f" % r
+        print("humidity: %.1f" % r)
 
     return r
 
@@ -606,12 +608,12 @@ def calc_heatindex(TAIR,RHUM,CELSIUS=True):
     """
     hi = 0
     if CELSIUS:
-	hi = heat_c(TAIR,RHUM)
+        hi = heat_c(TAIR,RHUM)
     else:
-	hi = heat_f(TAIR,RHUM)
+        hi = heat_f(TAIR,RHUM)
 
     if DEBUG:
-        print "heatidx: %.1f" % hi
+        print("heatidx: %.1f" % hi)
 
     return hi
 
@@ -622,12 +624,12 @@ def calc_SSI(TAIR,RHUM,CELSIUS=True):
     """
     ssi = 0
     if CELSIUS:
-	ssi = f_to_c(SSI_f(c_to_f(TAIR),RHUM))
+        ssi = f_to_c(SSI_f(c_to_f(TAIR),RHUM))
     else:
-	ssi = SSI_f(TAIR,RHUM)
+        ssi = SSI_f(TAIR,RHUM)
 
     if DEBUG:
-        print "SSI    : %.1f" % ssi
+        print("SSI    : %.1f" % ssi)
 
     return ssi
 
@@ -663,8 +665,8 @@ def main():
 
 
     if sys.version_info < (2, 4):
-        print "Sorry, your version of Python is too old (" + str(sys.version[0:5]) + \
-                "). Please upgrade to Python 2.4 or higher."
+        print("Sorry, your version of Python is too old (" + str(sys.version[0:5]) + \
+                "). Please upgrade to Python 2.4 or higher.")
         sys.exit(11)
 
 
@@ -674,9 +676,9 @@ def main():
         if (len(opts) < 1):
             # empty commandline
             usage()
-    except getopt.GetoptError, err:
+    except getopt.GetoptError as err:
         # print help information and exit:
-        print str(err) # will print something like "option -a not recognized"
+        print(str(err)) # will print something like "option -a not recognized"
         usage()
     for o, a in opts:
         if o in ("-h", "--help"):
@@ -710,106 +712,106 @@ def main():
         elif ( TUNIT.lower() == "c" ):
             CELSIUS = True
         else:
-            print "ERROR: invalid parameter '%s' for '-u'" % CTYP
+            print("ERROR: invalid parameter '%s' for '-u'" % CTYP)
             usage()
 
     # check for temperature (mandatory)
     if not has_set_t:
-        print "ERROR: mandatory parameter '-t' is missing"
+        print("ERROR: mandatory parameter '-t' is missing")
         usage(12)
 
     # check for type of calculation (mandatory)
     if has_set_r:
         if ( CTYP.lower() == "heatindex" ):
             if not has_set_m:
-                print "ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP)
                 usage(12)
             else:
-                print "%.1f" % calc_heatindex(TAIR,RHUM,CELSIUS)
+                print("%.1f" % calc_heatindex(TAIR,RHUM,CELSIUS))
 
         elif ( CTYP.lower() == "hi_txt" ):
             if not has_set_m:
-                print "ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP)
                 usage(12)
             else:
-                print "%s" % calc_heatindex_txt(TAIR,RHUM,CELSIUS)
+                print("%s" % calc_heatindex_txt(TAIR,RHUM,CELSIUS))
 
         elif ( CTYP.lower() == "humidex" ):
             if not has_set_m:
-                print "ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP)
                 usage(12)
             else:
-                print "%.1f" % calc_humidex(TAIR,RHUM,CELSIUS)
+                print("%.1f" % calc_humidex(TAIR,RHUM,CELSIUS))
 
         elif ( CTYP.lower() == "hu_txt" ):
             if not has_set_m:
-                print "ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP)
                 usage(12)
             else:
-                print "%s" % calc_humidex_txt(TAIR,RHUM,CELSIUS)
+                print("%s" % calc_humidex_txt(TAIR,RHUM,CELSIUS))
 
         elif ( CTYP.lower() == "ssi" ):
             if not has_set_m:
-                print "ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP)
                 usage(12)
             else:
-                print "%.1f" % calc_SSI(TAIR,RHUM,CELSIUS)
+                print("%.1f" % calc_SSI(TAIR,RHUM,CELSIUS))
 
         elif ( CTYP.lower() == "ssi_txt" ):
             if not has_set_m:
-                print "ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP)
                 usage(12)
             else:
-                print "%s" % calc_SSI_txt(TAIR,RHUM,CELSIUS)
+                print("%s" % calc_SSI_txt(TAIR,RHUM,CELSIUS))
 
         elif ( CTYP.lower() == "thw" ):
             if not has_set_m:
-                print "ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP)
                 usage(12)
             elif not has_set_w:
-                print "ERROR: mandatory parameter '-w' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-w' is missing for type '%s'" % CTYP)
                 usage(12)
             else:
-                print "%.1f" % calc_THW(TAIR,RHUM,WSPEED,CELSIUS)
+                print("%.1f" % calc_THW(TAIR,RHUM,WSPEED,CELSIUS))
 
         elif ( CTYP.lower() == "thsw" ):
             if not has_set_m:
-                print "ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP)
                 usage(12)
             elif not has_set_w:
-                print "ERROR: mandatory parameter '-w' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-w' is missing for type '%s'" % CTYP)
                 usage(12)
             else:
-                print "currently not implemented"
+                print("currently not implemented")
                 # print "%.1f" % calc_THSW(TAIR,RHUM,WSPEED,CELSIUS)
 
         elif ( CTYP.lower() == "windchill" ):
             if not has_set_w:
-                print "ERROR: mandatory parameter '-w' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-w' is missing for type '%s'" % CTYP)
                 usage(12)
             else:
-                print "%.1f" % calc_windchill(TAIR,WSPEED,CELSIUS)
+                print("%.1f" % calc_windchill(TAIR,WSPEED,CELSIUS))
 
         elif ( CTYP.lower() == "dewpoint" ):
             if not has_set_m:
-                print "ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-m' is missing for type '%s'" % CTYP)
                 usage(12)
             else:
-                print "%.1f" % calc_dewpoint(TAIR,RHUM,CELSIUS)
+                print("%.1f" % calc_dewpoint(TAIR,RHUM,CELSIUS))
 
         elif ( CTYP.lower() == "humidity" ):
             if not has_set_d:
-                print "ERROR: mandatory parameter '-d' is missing for type '%s'" % CTYP
+                print("ERROR: mandatory parameter '-d' is missing for type '%s'" % CTYP)
                 usage(12)
             else:
-                print "%.1f" % calc_humidity(TAIR,DEWP,CELSIUS)
+                print("%.1f" % calc_humidity(TAIR,DEWP,CELSIUS))
 
         else:
-            print "ERROR: invalid parameter '%s' for '-r'" % CTYP
+            print("ERROR: invalid parameter '%s' for '-r'" % CTYP)
             usage()
 
     else:
-        print "ERROR: mandatory parameter '-r' is missing"
+        print("ERROR: mandatory parameter '-r' is missing")
         usage(12)
 
 

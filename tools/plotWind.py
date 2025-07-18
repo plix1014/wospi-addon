@@ -24,6 +24,7 @@
 # Changes:
 #  PLI, 24.10.2023: remove debug code
 #  PLI, 15.11.2023: read HOMEPATH from environment
+#  PLI, 18.07.2025: changes for python3
 #
 
 import sys,os, shutil
@@ -51,6 +52,7 @@ mpl.use('Agg')
 from windrose.windrose import WindroseAxes
 from matplotlib import pyplot as plt
 import matplotlib.cm as cm
+import matplotlib.patches as patches
 from numpy import arange
 import numpy as np
 import sqlite3 as db
@@ -139,7 +141,7 @@ def prepareCSVData(fromMonth,fromYear):
     print_dbg(DEBUG, "DEBUG: start: %s" % (start))
     print_dbg(DEBUG, "DEBUG: end  : %s" % (end))
 
-    if (YYMM <> fromYYMM):
+    if (YYMM != fromYYMM):
         print_dbg(DEBUG, "DEBUG: YYMM (%s) <> fromYYMM (%s)" % (YYMM,fromYYMM))
         # open target file
         wx  = open(tmpwrdata, 'wb')
@@ -264,7 +266,7 @@ def read_wx_db(dbfile,fromDay,fromMonth,fromYear,fromHour,toDay,toMonth,toYear,i
 
         return table
 
-    except db.Error, e:
+    except db.Error as e:
         print_dbg(True, "Error %s:" % e.args[0])
         sys.exit(1)
 
@@ -325,7 +327,17 @@ def mk_windrose(prefix,plotBar=False):
         cb = fig.colorbar(sm)
         cb.ax.tick_params(labelsize=9)
 
-    fig.savefig(img_name, dpi=80, bbox_inches="tight", pad_inches=0.1, frameon=True)
+    # frame instead of "frameon" parameter
+    rect = patches.Rectangle(
+        (0, 0), 1, 1,
+        transform=fig.transFigure,
+        linewidth=2,
+        edgecolor='black',
+        facecolor='none'
+    )
+    #fig.patches.append(rect)
+
+    fig.savefig(img_name, dpi=80, bbox_inches="tight", pad_inches=0.1)
     plt.clf()
     uploadPNG(img_name)
 
@@ -352,7 +364,16 @@ def mk_windrose(prefix,plotBar=False):
         cb = fig.colorbar(sm)
         cb.ax.tick_params(labelsize=9)
 
-    fig.savefig(img_name, dpi=80, bbox_inches="tight", pad_inches=0.1, frameon=True)
+    rect = patches.Rectangle(
+        (0, 0), 1, 1,
+        transform=fig.transFigure,
+        linewidth=2,
+        edgecolor='black',
+        facecolor='none'
+    )
+    #fig.patches.append(rect)
+
+    fig.savefig(img_name, dpi=80, bbox_inches="tight", pad_inches=0.1)
     plt.clf()
     uploadPNG(img_name)
 

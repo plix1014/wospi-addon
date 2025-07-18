@@ -26,12 +26,12 @@ try:
     wospi.plotAnnualWind()
     os.system(wospi.SCPCOMMAND_PLOTANNUALWIND)
     if (os.path.isfile(wospi.PLOTANNUALWIND)):
-	os.unlink(wospi.PLOTANNUALWIND)
+        os.unlink(wospi.PLOTANNUALWIND)
 except Exception as e:
-    print 'Done with exception(s): %s.' % e
+    print('Done with exception(s): %s.' % e)
     errStat = 1
 
 if(errStat == 0):
-    print 'Done.'
+    print('Done.')
 
 

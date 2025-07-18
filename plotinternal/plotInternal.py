@@ -19,6 +19,8 @@
 # Copyright:   (c) Peter Lidauer 2016
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 18.07.2025: changes for python3
 
 import wospi
 import os, sys
@@ -187,7 +189,8 @@ def runGnuPlot(plt):
             outerr = proc_out.stderr.readlines()
 
             for line in outerr:
-                m = re.search(re_stderr, line.strip())
+                line = line.decode('latin1').strip()
+                m = re.search(re_stderr, line)
                 if m:
                     print_dbg(True, "STDERR: %s" % line.strip())
                     if re.search("warning:",line):
@@ -267,15 +270,21 @@ def standard_deviation(line):
     # 01.02.2016 06:03:02, 42.2, 21.6, 48, 21.0, 58.9, 20.0, 37.0
     parts = line.strip().split(',')
 
-    Tv22  = [ parts[2], parts[4]]
-    RHv22 = [ parts[3], parts[5]]
-    Tv11  = [ parts[2], parts[6]]
-    RHv11 = [ parts[3], parts[7]]
+    #Tv22  = [ parts[2], parts[4]]
+    #RHv22 = [ parts[3], parts[5]]
+    #Tv11  = [ parts[2], parts[6]]
+    #RHv11 = [ parts[3], parts[7]]
 
-    Tv22  = map(float, Tv22)
-    RHv22 = map(float, RHv22)
-    Tv11  = map(float, Tv11)
-    RHv11 = map(float, RHv11)
+    #Tv22  = list(map(float, Tv22))
+    #RHv22 = list(map(float, RHv22))
+    #Tv11  = list(map(float, Tv11))
+    #RHv11 = list(map(float, RHv11))
+
+    Tv22  = [float(parts[2]), float(parts[4])]
+    RHv22 = [float(parts[3]), float(parts[5])]
+    Tv11  = [float(parts[2]), float(parts[6])]
+    RHv11 = [float(parts[3]), float(parts[7])]
+
     #
     T22dev  = numpy.std(numpy.array([Tv22]), ddof=0)
     RH22dev = numpy.std(numpy.array([RHv22]), ddof=0)
@@ -297,8 +306,8 @@ def main():
 
     CURRENT_INTFILE = str(os.path.dirname(DEF_INTFILE)) + '/' + str(toYear) + '-' + str(os.path.basename(DEF_INTFILE))
 
-    print "INTFILE: " + DEF_INTFILE
-    print "CUR_INT: " + CURRENT_INTFILE
+    print("INTFILE: " + DEF_INTFILE)
+    print("CUR_INT: " + CURRENT_INTFILE)
 
     try:
         # part 1 : 24h plot

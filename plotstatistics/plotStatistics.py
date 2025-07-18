@@ -74,6 +74,8 @@
 #    v1.5:     add dropna() to fix the MinTemperatur during the current month
 #    v1.6:     exclude 'do_fill' in December
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 18.07.2025: changes for python3
 
 import os, sys, shutil, re
 import time, string
@@ -235,8 +237,8 @@ def prepareCSVData(fromMonth,fromYear, tmpfile):
     print_dbg(DEBUG, "DEBUG: start: %s" % (start))
     print_dbg(DEBUG, "DEBUG: end  : %s" % (end))
 
-    if (YYMM <> fromYYMM):
-        print_dbg(DEBUG, "DEBUG: YYMM (%s) <> fromYYMM (%s)" % (YYMM,fromYYMM))
+    if (YYMM != fromYYMM):
+        print_dbg(DEBUG, "DEBUG: YYMM (%s) != fromYYMM (%s)" % (YYMM,fromYYMM))
         # to add dummy data for missing months, now open target file inside the loop
 
         for dv in jump_by_month( start, end ):
@@ -301,8 +303,8 @@ def prepareCSVDataRain(fromMonth,fromYear, tmpfile):
     print_dbg(DEBUG, "DEBUG: start: %s" % (start))
     print_dbg(DEBUG, "DEBUG: end  : %s" % (end))
 
-    if (YYMM <> fromYYMM):
-        print_dbg(DEBUG, "DEBUG: YYMM (%s) <> fromYYMM (%s)" % (YYMM,fromYYMM))
+    if (YYMM != fromYYMM):
+        print_dbg(DEBUG, "DEBUG: YYMM (%s) != fromYYMM (%s)" % (YYMM,fromYYMM))
         # to add dummy data for missing months, now open target file inside the loop
 
         for dv in jump_by_month( start, end ):
@@ -521,7 +523,16 @@ def rain_stats(pdin,key,fromMonth,toMonth,do_fill):
     r_avg_d = pd_rain_d.mask(pd_rain_d.rain_dd.le(0.2)).groupby(pd.Grouper(freq='M')).mean()
 
     r_avg_m = r_sum_d.rolling(window=2).mean()
-    r_avg_m.at[key+'-01-31','rain_dd'] = r_sum_d.ix[key+'-01-31','rain_dd']
+    #r_avg_m.at[key + '-01-31', 'rain_dd'] = r_sum_d.loc[key + '-01-31', 'rain_dd']
+
+    date_key = pd.to_datetime(key + '-01-31')
+    if date_key in r_sum_d.index:
+        r_avg_m.at[date_key, 'rain_dd'] = r_sum_d.loc[date_key, 'rain_dd']
+    else:
+        print(f"Date {date_key} not found — skipping or filling with default.")
+        r_avg_m.at[date_key, 'rain_dd'] = 0.0  # or np.nan
+
+
 
     for i in range(2,5):
            r_avg_m['MA{}'.format(i)] = r_sum_d.rolling(window=i).mean()
@@ -664,7 +675,7 @@ def temp_stats(pdin,key,fromMonth,toMonth,do_fill):
     # need this for resampling
     # to have the required timerange within the same day
     # last night was a trope-night if between 06:00pm and 06:00am Tmin >= 20degC
-    pdt = pd_temp.tshift(6, freq='H')
+    pdt = pd_temp.shift(6, freq='H')
     print_dbg(DEBUG, "DEBUG: pandas temperature df tshift 6h: \n%s" % (pdt.tail(3)))
 
     # the temperature we need to check is now between 00:00 and 12:00 noon
@@ -939,7 +950,7 @@ def usage():
     msg += "\t      python plotStatistics.py -c -f -i y\n"
     msg += "\n"
 
-    print msg
+    print(msg)
     sys.exit(10)
     return
 
@@ -957,7 +968,7 @@ def main():
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hcl:fi:", ["help", "current", "last", "fill", "interval="])
-    except getopt.GetoptError, err:
+    except getopt.GetoptError as err:
         # print help information and exit:
         log(E, str(err))
         usage()
@@ -980,7 +991,7 @@ def main():
 
 
     if has_cmdi:
-        if (INTERVAL <> "y") and (INTERVAL <> "m"):
+        if (INTERVAL != "y") and (INTERVAL != "m"):
             print_dbg(True, "ERROR: only 'y' or 'm' are allowed")
             usage()
 

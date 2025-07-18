@@ -34,6 +34,7 @@
 #  PLI, 30.10.2023: adjustments for container image
 #  PLI, 02.11.2023: add watermark color
 #  PLI, 15.11.2023: read HOMEPATH from environment
+#  PLI, 18.07.2025: changes for python3
 #
 
 import sys, os
@@ -41,15 +42,14 @@ import sys, os
 CONFIG_HOME = os.environ.get('HOMEPATH')
 sys.path.append(CONFIG_HOME)
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import time
 from datetime import datetime, timedelta, date
 import numpy as np
 
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageSequence
-from images2gif import writeGif
+import imageio
 from fnmatch import fnmatch
-import imghdr
 
 from config import SCPTARGET, SCP
 
@@ -78,7 +78,7 @@ DO_SCP=True
 def print_dbg(level,msg):
     now = time.strftime('%a %b %d %H:%M:%S %Y LT:')
     if level:
-        print("%s %s" % (now,msg))
+        print(("%s %s" % (now,msg)))
     return
 
 def add_watermark(in_file, text, out_file='watermark.jpg', angle=0, opacity=0.8):
@@ -88,12 +88,20 @@ def add_watermark(in_file, text, out_file='watermark.jpg', angle=0, opacity=0.8)
     watermark = Image.new('RGBA', img.size, (0,0,0,0))
     size = 2
     n_font = ImageFont.truetype(FONT, size)
-    n_width, n_height = n_font.getsize(text)
+
+    bbox = n_font.getbbox(text)
+    n_width = bbox[2] - bbox[0]
+    n_height = bbox[3] - bbox[1]
+
     text_size_scale = 3.5
     while n_width+n_height < watermark.size[0]/text_size_scale:
         size += 2
         n_font = ImageFont.truetype(FONT, size)
-        n_width, n_height = n_font.getsize(text)
+
+        bbox = n_font.getbbox(text)
+        n_width = bbox[2] - bbox[0]
+        n_height = bbox[3] - bbox[1]
+
     draw = ImageDraw.Draw(watermark, 'RGBA')
     draw.text(((watermark.size[0] - n_width) / 10,
                (watermark.size[1] - n_height) / 100),
@@ -112,6 +120,24 @@ def make_gif(outgif,frames,duration,loop):
                save_all=True, duration=duration, loop=loop)
 
 
+def make_gif2(outgif, frames, duration, loop):
+    """imageio expects a list of image arrays or filenames
+       duration is in seconds per frame, so convert milliseconds if needed
+       Convert PIL Images to numpy arrays if needed"""
+    np_frames = []
+    for frame in frames:
+        if not isinstance(frame, np.ndarray):
+            frame = np.array(frame)
+        np_frames.append(frame)
+    imageio.mimsave(outgif, np_frames, duration=duration / 1000, loop=loop)
+
+
+def get_image_type(filename):
+    """ returns 'JPEG', 'PNG', etc."""
+    with Image.open(filename) as img:
+        return img.format.lower()
+
+
 def animate_gif(in_dir,in_mask):
     """ combine the jpg files into a gif
         repeat rotation of jpgs
@@ -125,7 +151,7 @@ def animate_gif(in_dir,in_mask):
     size = (886,488)
     #size = (886/2,488/2)
     for im in images:
-        im.thumbnail(size, Image.ANTIALIAS)
+        im.thumbnail(size, Image.LANCZOS)
 
     print_dbg(True, "INFO: generating %s..." % outgif)
     try:
@@ -137,6 +163,7 @@ def animate_gif(in_dir,in_mask):
         #writeGif(outgif, images, duration=2.0, repeat=True, dither=False)
         # alternate method
         make_gif(outgif, images, duration=2000, loop=0)
+        #make_gif2(outgif, images, duration=2000, loop=0)
 
     except Exception as e:
         print_dbg(True, 'ERROR: could not create %s: %s.' % (outgif,e))
@@ -234,14 +261,14 @@ def main():
 
             if not os.path.isfile(outdir+image_name):
                 try:
-                    urllib.urlretrieve(URL, outdir+image_name)
+                    urllib.request.urlretrieve(URL, outdir+image_name)
 
                 except Exception as e:
                     print_dbg(True, 'ERROR: URL: %s.' % (URL))
                     print_dbg(True, 'ERROR: could not download %s: %s.' % (image_name,e))
                     sys.exit(1)
 
-                if imghdr.what(outdir+image_name) == 'jpeg':
+                if get_image_type(outdir+image_name) == 'jpeg':
                     add_watermark(outdir+image_name,sat+': '+stringdate,outdir+image_name)
                     print_dbg(True, "  " + image_name)
                 else:

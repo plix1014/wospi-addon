@@ -18,6 +18,7 @@
 #-------------------------------------------------------------------------------
 # Changes:
 #  PLI, 15.11.2023: read HOMEPATH from environment
+#  PLI, 18.07.2025: changes for python3
 #
 
 import sys, os, subprocess
@@ -63,8 +64,8 @@ def save2CSV(csv,atTime,IntVal):
         fout = open(csv, 'a')
         max = len(IntVal) - 1
 
-        print "header : datetime, SoC, IAT, Irh, DHTtemp, DHTrh"
-        print "list   : %s" % IntVal
+        print("header : datetime, SoC, IAT, Irh, DHTtemp, DHTrh")
+        print("list   : %s" % IntVal)
 
         # first record is the date
 
@@ -76,13 +77,13 @@ def save2CSV(csv,atTime,IntVal):
         # add last record
         new_rec += IntVal[max] + '\n'
 
-        print "new_rec: %s" % new_rec
+        print("new_rec: %s" % new_rec)
 
         fout.write(new_rec)
         fout.close()
 
     except Exception as e:
-        print 'Exception occured in function save2CSV. Check your code: %s' % e
+        print('Exception occured in function save2CSV. Check your code: %s' % e)
 
     return
 
@@ -94,8 +95,8 @@ def get_tempvals(infile):
     re_temphum = re.compile(r'\s+Console Temperature.*:\s+(\d+.\d+)&deg.*RH:\s+(\d+)\s+%')
 
     for line in txt:
-	m = re.match(re_temphum, line)
-	if m:
+        m = re.match(re_temphum, line)
+        if m:
             T_RH = [m.group(1), m.group(2) ]
 
     return T_RH
@@ -115,7 +116,7 @@ def get_dht22(gpio):
 
     dht_line = lines[-1].split()
 
-    print dht_line
+    print(dht_line)
 
     # only use valid values
     if len(dht_line) == 8:
@@ -134,7 +135,7 @@ def get_dht22ADA(gpio):
     if RH22 is not None and IAT22 is not None:
         dht = ["%.1f" % IAT22, "%.1f" % RH22]
     else:
-        print 'Failed to get reading. Try again!'
+        print('Failed to get reading. Try again!')
 
     time.sleep(duration)
 
@@ -150,7 +151,7 @@ def get_dht11ADA(gpio):
     if RH11 is not None and IAT11 is not None:
         dht = ["%.1f" % IAT11, "%.1f" % RH11]
     else:
-        print 'Failed to get reading. Try again!'
+        print('Failed to get reading. Try again!')
 
     time.sleep(duration)
 

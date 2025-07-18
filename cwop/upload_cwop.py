@@ -46,9 +46,10 @@
 #-------------------------------------------------------------------------------
 # Changes:
 #  PLI, 15.11.2023: read HOMEPATH from environment
+#  PLI, 18.07.2025: changes for python3
 #
 
-from __future__ import print_function
+
 
 import sys,os
 
@@ -85,7 +86,7 @@ CWOP_FIX = ">APRS,TCPIP*:"
 
 # for testing, if 'True' no upload happens
 # set to 'False' for normal operation
-TESTING=False
+TESTING=True
 
 # just print more information
 DEBUG=False
@@ -102,7 +103,7 @@ def split_lonlat(gps_coded):
     # definition is wrong in the above link
     direction = {'N':1, 'S':-1, 'E':1, 'W':-1}
     # tokenize string
-    gps_clean = gps_coded.replace(u'°',' ').replace('*', ' ').replace('\'',' ').replace('"',' ')
+    gps_clean = gps_coded.replace('°',' ').replace('*', ' ').replace('\'',' ').replace('"',' ')
     gps_clean = gps_clean.split()
     # get wind direction
     gps_clean_dir = gps_clean.pop()

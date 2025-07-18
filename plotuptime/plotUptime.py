@@ -18,6 +18,8 @@
 # Copyright:   (c) Peter Lidauer 2016
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 18.07.2025: changes for python3
 
 import wospi
 import os, sys
@@ -174,7 +176,8 @@ def runGnuPlot(plt):
             outerr = proc_out.stderr.readlines()
 
             for line in outerr:
-                m = re.search(re_stderr, line.strip())
+                line = line.decode('latin1').strip()
+                m = re.search(re_stderr, line)
                 if m:
                     print_dbg(True, "STDER: %s" % line.strip())
                     if re.search("warning:",line):

@@ -21,6 +21,8 @@
 #    v1.1: add gnuplot and transfer code
 #    v1.2: send year to gnuplot input file
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 18.07.2025: changes for python3
 
 import wospi
 import os, sys, shutil
@@ -188,7 +190,7 @@ def main():
 
 
     except Exception as e:
-        print 'Done with exception(s): %s.' % e
+        print('Done with exception(s): %s.' % e)
         errStat = 1
 
     if(errStat == 0):

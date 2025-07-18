@@ -20,6 +20,8 @@
 # Copyright:   (c) Peter Lidauer 2016
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 18.07.2025: changes for python3
 
 import wospi
 import os, sys
@@ -135,8 +137,8 @@ def prepareCSVData(fromMonth,fromYear):
     print_dbg(DEBUG, "DEBUG: start: %s" % (start))
     print_dbg(DEBUG, "DEBUG: end  : %s" % (end))
 
-    if (YYMM <> fromYYMM):
-        print_dbg(DEBUG, "DEBUG: YYMM (%s) <> fromYYMM (%s)" % (YYMM,fromYYMM))
+    if (YYMM != fromYYMM):
+        print_dbg(DEBUG, "DEBUG: YYMM (%s) != fromYYMM (%s)" % (YYMM,fromYYMM))
         print_dbg(True, "INFO : merging wxdata.csv into one file")
         # open target file
         wx  = open(tmpwrdata, 'wb')
@@ -262,7 +264,7 @@ def prepareSunData(fromDay, fromMonth, fromYear, toDay, toMonth, toYear, outfile
 
             except:
                 # key error, add dummy value
-                if SunTimes.has_key(csvDate):
+                if csvDate in SunTimes:
                     rec  = SunTimes[csvDate] + ', '
                     rec += "0.00" + ', '
                     rec += "0.00"
@@ -313,7 +315,8 @@ def runGnuPlot(plt):
             outerr = proc_out.stderr.readlines()
 
             for line in outerr:
-                m = re.search(re_stderr, line.strip())
+                line = line.decode('latin1').strip()
+                m = re.search(re_stderr, line)
                 if m:
                     print_dbg(True, "STDERR: %s" % line.strip())
                     if re.search("warning:",line):

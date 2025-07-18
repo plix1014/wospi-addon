@@ -18,6 +18,8 @@
 # Copyright:   (c) Peter Lidauer 2016
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 18.07.2025: changes for python3
 
 import config
 import os, sys
@@ -83,9 +85,10 @@ def runGnuPlot(plt, KEEP_TMP=False, LEVEL1=False, LEVEL2=False):
             outerr = proc_out.stderr.readlines()
 
             for line in outerr:
-                m = re.search(re_stderr, line.strip())
+                line = line.decode('latin1').strip()
+                m = re.search(re_stderr, line)
                 if m:
-                    print_dbg(True, "STDERR: %s" % line.strip())
+                    print_dbg(True, "STDERR: %s" % line)
                     if re.search("warning:",line):
                         # we ignore warning errors
                         pass
@@ -178,7 +181,7 @@ def saveTemp2CSV(outFile,toTime,SOCTEMP):
         fout.close()
 
     except Exception as e:
-        print 'Exception occured in function saveTemp2CSV. Check your code: %s' % e
+        print('Exception occured in function saveTemp2CSV. Check your code: %s' % e)
 
     return
 

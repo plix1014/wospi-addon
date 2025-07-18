@@ -18,6 +18,7 @@
 #-------------------------------------------------------------------------------
 # Changes:
 #  PLI, 15.11.2023: read HOMEPATH from environment
+#  PLI, 18.07.2025: changes for python3
 #
 
 import sys, os, subprocess
@@ -42,7 +43,7 @@ def save2CSV(csv,atTime,upTime):
         fout.close()
 
     except Exception as e:
-        print 'Exception occured in function save2CSV. Check your code: %s' % e
+        print('Exception occured in function save2CSV. Check your code: %s' % e)
 
     return
 
@@ -70,7 +71,7 @@ def read_uptime():
             epoch_time = int(time())
             fup = epoch_time - int(uptime_val)
 
-        elif (sys.platform == "linux2" ):
+        elif (sys.platform == "linux2" or sys.platform == "linux"):
             procfile = '/proc/uptime'
             with open(procfile, 'r') as f:
                 fup = float(f.readline().split()[0])
@@ -81,7 +82,7 @@ def read_uptime():
             pass
 
     except Exception as e:
-        print 'Exception occured in function read_uptime. Check your code: %s' % e
+        print('Exception occured in function read_uptime. Check your code: %s' % e)
 
     return fup
 
@@ -100,11 +101,11 @@ def main():
         uptime_string = str(timedelta(seconds = uptime_seconds))
         uptime_hh = "%.2f" % float(uptime_seconds/3600.0)
 
-        print("save current uptime: at %s this server is %sh up.") % (stringdate,uptime_hh)
+        print(("save current uptime: at %s this server is %sh up.") % (stringdate,uptime_hh))
 
         save2CSV(UPTIMEFILE,stringdate,uptime_hh)
     else:
-        print "WARN: invalid uptime or unsupported OS."
+        print("WARN: invalid uptime or unsupported OS.")
 
 
 if __name__ == '__main__':

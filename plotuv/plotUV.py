@@ -68,6 +68,8 @@
 #    v1.1:     add 'fill' option
 #    v1.2:     fix getopts typo, change plotting of ice days, add dummy data for missing months
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 18.07.2025: changes for python3
 
 import os, sys, shutil, re
 import time, string
@@ -155,7 +157,7 @@ TRACE= True
 # keep png files after upload
 KEEP_PNG = False
 # keep temporary files
-KEEP_TMP = False
+KEEP_TMP = True
 # upload png and inc
 DO_SCP   = True
 
@@ -187,8 +189,8 @@ def prepareCSVData(fromMonth,fromYear, tmpfile):
     print_dbg(DEBUG, "DEBUG: start: %s" % (start))
     print_dbg(DEBUG, "DEBUG: end  : %s" % (end))
 
-    if (YYMM <> fromYYMM):
-        print_dbg(DEBUG, "DEBUG: YYMM (%s) <> fromYYMM (%s)" % (YYMM,fromYYMM))
+    if (YYMM != fromYYMM):
+        print_dbg(DEBUG, "DEBUG: YYMM (%s) != fromYYMM (%s)" % (YYMM,fromYYMM))
         # to add dummy data for missing months, now open target file inside the loop
 
         for dv in jump_by_month( start, end ):
@@ -514,7 +516,7 @@ def usage():
     msg += "\t      python plotUV.py -d\n"
     msg += "\n"
 
-    print msg
+    print(msg)
     sys.exit(10)
     return
 
@@ -533,7 +535,7 @@ def main():
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hcl:fi:d", ["help", "current", "last", "fill", "interval="])
-    except getopt.GetoptError, err:
+    except getopt.GetoptError as err:
         # print help information and exit:
         log(E, str(err))
         usage()
@@ -558,7 +560,7 @@ def main():
 
 
     if has_cmdi:
-        if (INTERVAL <> "y") and (INTERVAL <> "m"):
+        if (INTERVAL != "y") and (INTERVAL != "m"):
             print_dbg(True, "ERROR: only 'y' or 'm' are allowed")
             usage()
 
