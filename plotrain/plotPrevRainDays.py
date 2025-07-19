@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf8 -*-
 #-------------------------------------------------------------------------------
 # Name:        plotPrevRainDays.py
@@ -45,7 +45,7 @@ labelfile  = wospi.TMPPATH + 'year.tmp'
 
 
 # set debug level
-DEBUG    = True
+DEBUG    = False
 
 # keep png files after upload
 KEEP_PNG = True

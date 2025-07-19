@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # triggers mqtt publish after four updates to the wxdata.xml
 #
@@ -52,7 +52,7 @@ MQTT_MSG_ALL          = ''
 WXDATA = {}
 
 INFO  = True
-DEBUG = True
+DEBUG = False
 
 Connected = False
 

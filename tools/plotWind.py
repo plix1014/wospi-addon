@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf8 -*-
 #-------------------------------------------------------------------------------
 # Name:        plotWind.py
@@ -78,7 +78,7 @@ wd=[]
 ws=[]
 
 # set debug level
-DEBUG=True
+DEBUG=False
 # show table contents
 TRACE=False
 
