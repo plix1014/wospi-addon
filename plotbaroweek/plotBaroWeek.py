@@ -27,8 +27,8 @@ try:
     wospi.prepareBaroData(fromDay, fromMonth, fromYear, toDay, toMonth, toYear)
     wospi.plotBaroWeek()
     os.system(wospi.SCPCOMMAND_PLOTBAROWEEK)
-    #if (os.path.isfile(wospi.PLOTBAROWEEK)):
-    #    os.unlink(wospi.PLOTBAROWEEK)
+    if (os.path.isfile(wospi.PLOTBAROWEEK)):
+        os.unlink(wospi.PLOTBAROWEEK)
 except Exception as e:
     print('Done with exception(s): %s.' % e)
     errStat = 1
