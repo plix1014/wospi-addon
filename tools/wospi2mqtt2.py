@@ -112,18 +112,30 @@ def on_connect(client, userdata, flags, rc):
     Connected = True
 
 
+
 def on_message(client, userdata, msg):
-    print_dbg(DEBUG,"received topic  : %s" % msg.topic)
-    print_dbg(DEBUG,"received payload: %s" % msg.payload) # <- do you mean this payload = {...} ?
+    print_dbg(DEBUG, "received topic  : %s" % msg.topic)
+    print_dbg(DEBUG, "received payload: %s" % msg.payload)
 
-    payload = json.loads(msg.payload) # you can use json.loads to convert string to json
+    try:
+        # Decode bytes to str first
+        payload_str = msg.payload.decode('utf-8')
+        payload = json.loads(payload_str)
 
-    for key in payload.keys():
-        print_dbg(INFO, "received %s: %s" % (key,payload[key]))
+        if isinstance(payload, dict):
+            for key in payload.keys():
+                print_dbg(INFO, "received %s: %s" % (key, payload[key]))
+        else:
+            print_dbg(WARN, f"Payload is not a dict: {payload} (type: {type(payload).__name__})")
 
+    except json.JSONDecodeError as e:
+        print_dbg(ERROR, f"JSON decode error: {e}")
+    except Exception as e:
+        print_dbg(ERROR, f"Unexpected error: {e}")
 
     time.sleep(0.1)
-    #client.disconnect() # Got message then disconnect
+    # client.disconnect()
+
 
 
 def on_disconnect(client, userdata,rc=0):
