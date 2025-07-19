@@ -86,7 +86,7 @@ CWOP_FIX = ">APRS,TCPIP*:"
 
 # for testing, if 'True' no upload happens
 # set to 'False' for normal operation
-TESTING=True
+TESTING=False
 
 # just print more information
 DEBUG=False
