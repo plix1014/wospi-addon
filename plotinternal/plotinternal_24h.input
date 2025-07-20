@@ -22,7 +22,7 @@ sun     = csvdir . 'suntimes.csv'
 # datetime (1)  SoC(2)   IAT(3)  IRH(4)  DHT22_T(5)  DHT22_RH(6)  DHT11_T(7)  DHT11_RH(8)
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of Tdht 
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y %H:%M:%S'
 set datafile separator ','
@@ -33,7 +33,7 @@ Td22_max_y = GPVAL_DATA_Y_MAX
 
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of Tdht 
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y %H:%M:%S'
 set datafile separator ','
@@ -47,7 +47,7 @@ Td_max_y = Td22_max_y
 
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of Tvantage
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y %H:%M:%S'
 set datafile separator ','
@@ -58,7 +58,7 @@ Tv_max_y = GPVAL_DATA_Y_MAX
 
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of RHv
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y %H:%M:%S'
 set datafile separator ','
@@ -69,7 +69,7 @@ RHv_max_y = GPVAL_DATA_Y_MAX
 
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of RHdht
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y %H:%M:%S'
 set datafile separator ','
@@ -80,7 +80,7 @@ RHd22_max_y = GPVAL_DATA_Y_MAX
 
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of RHdht
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y %H:%M:%S'
 set datafile separator ','
@@ -123,7 +123,7 @@ set grid
 set key below
 set key spacing 3
 
-set y2tics
+#set y2tics
 set ytics nomirror
 set yrange[(Td_min_y < Tv_min_y ? Td_min_y-1 : Tv_min_y-1) : (Td_max_y > Tv_max_y ? Td_max_y+1 : Tv_max_y+1)]
 set xrange [ * : GPVAL_DATA_X_MAX ]
@@ -178,7 +178,7 @@ set grid
 set key below
 set key spacing 3
 
-set y2tics
+#set y2tics
 set ytics nomirror
 set ylabel "Relative Humidity %"
 

@@ -18,7 +18,7 @@ fitout  = tmpdir . 'fitsoc.log'
 
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of solar radiation
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%Y.%m.%d'
 #set timefmt '%d.%m.%Y %H:%M:%S'

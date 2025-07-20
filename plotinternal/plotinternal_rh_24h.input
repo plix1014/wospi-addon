@@ -19,7 +19,7 @@ dataout = tmpdir . 'plotinternal_rh_24h.png'
 # datetime (1)  SoC(2)   IAT(3)  IRH(4)  DHT22_T(5)  DHT22_RH(6)  DHT11_T(7)  DHT11_RH(8)
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of RH22
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y %H:%M:%S'
 set datafile separator ','
@@ -31,7 +31,7 @@ max_x = GPVAL_DATA_X_MAX
 
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of RH11
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y %H:%M:%S'
 set datafile separator ','
@@ -45,7 +45,7 @@ Td_max_y = Rh22_max_y
 
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of Tsigma 
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y %H:%M:%S'
 set datafile separator ','

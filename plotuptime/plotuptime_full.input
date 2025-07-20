@@ -18,7 +18,7 @@ fitout  = tmpdir . 'fituptime.log'
 
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y'
 set datafile separator ','

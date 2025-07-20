@@ -24,7 +24,7 @@ set xdata time
 reset
 
 # 
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y'
 set datafile separator ','

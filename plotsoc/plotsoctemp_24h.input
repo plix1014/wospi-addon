@@ -16,7 +16,7 @@ datain  = tmpdir . 'plotsoctemp_24h.tmp'
 dataout = tmpdir . 'plotsoctemp_24h.png'
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of SoC temperature
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y %H:%M:%S'
 set datafile separator ','

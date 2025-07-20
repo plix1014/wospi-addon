@@ -14,7 +14,7 @@ if (GPVAL_VERSION >= 5.0) {set colors classic}
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
 # Scale Y2 axis for mm rain with padding space
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%Y-%m'
 set datafile separator ','
