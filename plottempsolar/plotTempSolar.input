@@ -1,0 +1,94 @@
+# DAILY MAX TEMPERATURE and SOLAR RADIATION OVER A 12-MONTH PERIOD
+# SMOOTHED CURVES (Bezier-style) 
+#
+# Rev. 20150323/TMJ  -  tmj@bitwrap.no
+# http://annoyingdesigns.com
+#
+# This script file can be modified, but please be careful.
+
+
+# SUPPORT FUNCTION TO CONVERT DEGREES C TO DEGREES F 
+toF(temp) = (temp * 1.8) + 32
+
+
+# Count number of records
+unset xdata
+stats '/var/tmp/plottempsolar.tmp' using 1
+set xdata time
+reset
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of solar radiation
+set terminal unknown
+set xdata time
+set timefmt '%Y.%m.%d %H:%M:%S'
+set datafile separator ','
+
+plot '/var/tmp/plottempsolar.tmp' using 1:3 axis x1y1
+
+min_y = GPVAL_DATA_Y_MIN
+max_y = GPVAL_DATA_Y_MAX
+reset
+
+
+
+# PERFORM THE ACTUAL PLOT
+set terminal pngcairo enhanced size 1080, 480
+set encoding utf8
+set output '/var/tmp/plottempsolar.png' 
+
+set ylabel sprintf("Watts / m^{2}")
+
+# NOTE: Set y2label for temperature in degrees C or F - uncomment/comment (#) below
+set y2label "Temperature °C"
+#set y2label "Temperature °F"
+
+
+set title sprintf("PLOTTITLE\nTIMESTAMP")
+
+set key right below
+
+set xtics rotate
+set xtics font 'Helvetica, 9'
+set ytics nomirror
+set y2tics
+
+set xdata time
+set timefmt '%Y.%m.%d'
+set datafile separator ','
+set format x sprintf("%d.%m.%Y")
+set autoscale fix
+
+
+# Adjust number of X labels
+xT = 1
+if(STATS_records < 25) xT = 1; else if (STATS_records < 50) xT = 2; else if (STATS_records < 100) xT = 4; else if(STATS_records < 200) xT = 10; else xT = 15
+set xtics 86400 * xT
+
+set label 1 sprintf("NOTE: Smoothed Bezier curves for %d days worth of data", STATS_records) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Helvetica, 10'
+
+set grid front lt 8
+
+
+# NOTE: ---------- READ CAREFULLY ---------- READ CAREFULLY ---------- READ CAREFULLY ----------
+# NOTE: To plot temperature in degrees F or degrees C, uncomment/comment (#) the corresponding lines 
+#       below. F and C units cannot be used in the same data plot. 
+#       Also adjust the y2 axis label (see NOTE above) to indicate C or F units. 
+
+plot min_y-2 with filledcurves y1=STATS_mean lc rgb '#effbfb' notitle, \
+max_y+2 with filledcurves y1=STATS_mean lc rgb '#effbfb' notitle, \
+'/var/tmp/plottempsolar.tmp' u 1:3:(1.0) smooth bezier axis x1y1 lc rgb '#ff1493' lw 3 title "Max daily SOLAR RADIATION", \
+'' u 1:2:(1.0) smooth bezier axis x1y2 lc rgb '#1493ff' lw 3 title "Max daily TEMPERATURE"
+
+#plot min_y-2 with filledcurves y1=STATS_mean lc rgb '#effbfb' notitle, \
+#max_y+2 with filledcurves y1=STATS_mean lc rgb '#effbfb' notitle, \
+#'/var/tmp/plottempsolar.tmp' u 1:3:(1.0) smooth bezier axis x1y1 lc rgb '#ff1493' lw 3 title "Max daily SOLAR RADIATION", \
+#'' u 1:(toF($2)):(1.0) smooth bezier axis x1y2 lc rgb '#1493ff' lw 3 title "Max daily TEMPERATURE"
+# NOTE: ---------- READ CAREFULLY ---------- READ CAREFULLY ---------- READ CAREFULLY ----------
+
+
+
+
+ 
+
+

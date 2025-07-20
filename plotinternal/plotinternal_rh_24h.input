@@ -57,7 +57,8 @@ RHs22_max_y = GPVAL_DATA_Y_MAX
 
 # ------------------------------------------------------------------------------------------
 
-set terminal png enhanced size 1080, 960
+set terminal pngcairo enhanced size 1080, 960
+set encoding utf8
 set output dataout
 
 

@@ -1,0 +1,118 @@
+# PLOT 10-MINUTE WIND VELOCITY AND WIND GUST SPEED
+#
+# Rev. 20140118/TMJ  -  tmj@bitwrap.no
+# http://annoyingdesigns.com 
+#
+# This script file can be modified, but please be careful.
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:7 axis x1y1,\
+ '/var/tmp/plotdata.tmp' using 1:16 axis x1y1
+
+# NOTE: Uncomment the FACTOR line below for MPH units 
+#       Also set the y2label description (further down) accordingly
+#FACTOR = 1.1507794480235425
+
+# NOTE: Uncomment the FACTOR line below for m/sec units
+#       Also set the y2label description (further down) accordingly
+FACTOR = 0.514444444
+
+YMIN = GPVAL_Y_MIN * FACTOR
+YMAX = GPVAL_Y_MAX * FACTOR
+
+# Standard deviation for wind direction 
+# DISABLED UFN due to erroneous results
+#set fit logfile '/var/tmp/fit.log'
+#f(x) = mean_y
+#fit ["FROMTIME":"TOTIME"] f(x) '/var/tmp/plotdata.tmp' using 1:6 via mean_y
+#stddev_y = sqrt(FIT_WSSR / (FIT_NDF + 1))
+
+reset
+
+
+
+# PERFORM THE ACTUAL PLOTS 
+set terminal pngcairo transparent enhanced size 1080, 768
+set encoding utf8
+set output '/var/tmp/wind_24hr.png' 
+if (GPVAL_VERSION >= 5.0) {set colors classic}
+
+set size 1,1
+set origin 0,0
+
+set multiplot title "PLOTTITLE\nTIMESTAMP\n"
+
+
+# FIRST GRAPH - WIND DIRECTION
+set size 1,0.45
+set origin 0,0.5	
+set title sprintf("WIND DIRECTION RECORDED AT 10-MINUTE INTERVALS")  
+set grid
+set nokey
+
+set ytics 90
+set yrange[0:360]
+set ylabel 'Wind Direction - Degrees'
+set ytics format "%0.0f°"
+
+set y2tics('N' 0, 'E' 90, 'S' 180, 'W' 270, 'N' 360)
+set y2range[0:360]
+set y2label 'Wind Direction - Cardinal' rotate by 90 left
+
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+
+SUNRISE = "`head -1 /var/tmp/sunrise.tmp`"
+SUNSET = "`head -1 /var/tmp/sunset.tmp`"
+set label sprintf("^{Sunrise}") center at SUNRISE, graph(1,1.04)
+set label sprintf("^{Sunset}") center at SUNSET, graph(1,1.04)
+set arrow from SUNRISE,graph(0,0) to SUNRISE,graph(1,1) nohead ls 4 lw 2
+set arrow from SUNSET,graph(0,0) to SUNSET,graph(1,1) nohead ls 4 lw 2
+
+set style fill transparent solid 0.2 noborder
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:6  lc rgb 'dark-green' pt 5 
+
+
+
+# SECOND GRAPH - WIND and WIND GUST SPEED
+reset
+
+set size 1,0.45
+set origin 0,0
+
+set title 'WIND SPEED and WIND GUST SPEED'
+set grid
+set key below
+
+set ylabel 'Knots'
+set y2label 'M/sec.' rotate by 90 left
+set ytics nomirror
+set y2tics nomirror
+set y2range[YMIN:YMAX]
+
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+
+set label sprintf("^{Sunrise}") center at SUNRISE, graph(1,1.04)
+set label sprintf("^{Sunset}") center at SUNSET, graph(1,1.04)
+set arrow from SUNRISE,graph(0,0) to SUNRISE,graph(1,1) nohead ls 4 lw 2
+set arrow from SUNSET,graph(0,0) to SUNSET,graph(1,1) nohead ls 4 lw 2
+
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:7 lc rgb 'steelblue' pt 5 title 'Wind speed (momentanous)' axis x1y1,\
+ '/var/tmp/plotdata.tmp' using 1:16 lc rgb 'red' pt 5 title 'Wind gust speed (10-minute)'  axis x1y1
+
+
+
+
+

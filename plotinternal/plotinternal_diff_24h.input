@@ -93,7 +93,8 @@ reset
 
 # ------------------------------------------------------------------------------------------
 
-set terminal png enhanced size 1080, 960
+set terminal pngcairo enhanced size 1080, 960
+set encoding utf8
 set output dataout
 
 set size 1,1
@@ -111,7 +112,7 @@ set size 1,0.45
 set origin 0,0.5
 
 # NOTE: Set ylabel for temperature in degrees C
-set ylabel "Temperature \260C"
+set ylabel "Temperature °C"
 
 set title sprintf("TEMPERATURE (T_{vantage}, T_{DHT22}, T_{DHT11})")
 set grid

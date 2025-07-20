@@ -40,11 +40,12 @@ reset
 
 
 # PERFORM THE ACTUAL PLOT
-set terminal png enhanced size 1080, 480
+set terminal pngcairo enhanced size 1080, 480
+set encoding utf8
 set output dataout
 if (GPVAL_VERSION >= 5.0) {set colors classic}
 
-set ylabel "\260C"
+set ylabel "°C"
 
 set title sprintf("PLOTTITLE\nTIMESTAMP")
 
@@ -76,8 +77,8 @@ set fit logfile fitout
 f(x) = mean_y
 fit f(x) datain u 1:($2) via mean_y
 
-set label 1 sprintf("LOWEST DAILY MIN = %#1.1f\260C   HIGHEST DAILY MAX = %#1.1f\260C   AVERAGE DAILY MAX = %#1.1f\260C over a period of %d days", min_y,  max_y, mean_y, STATS_records) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Helvetica, 10'
-#set label 1 sprintf("LOWEST DAILY MIN = %#1.1f\260C   HIGHEST DAILY MAX = %#1.1f\260C   AVERAGE DAILY MAX = %#1.1f\260C over a period of %d days", min_y,  max_y, mean_y, STATS_records) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Verdana, 10'
+set label 1 sprintf("LOWEST DAILY MIN = %#1.1f°C   HIGHEST DAILY MAX = %#1.1f°C   AVERAGE DAILY MAX = %#1.1f°C over a period of %d days", min_y,  max_y, mean_y, STATS_records) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Helvetica, 10'
+#set label 1 sprintf("LOWEST DAILY MIN = %#1.1f°C   HIGHEST DAILY MAX = %#1.1f°C   AVERAGE DAILY MAX = %#1.1f°C over a period of %d days", min_y,  max_y, mean_y, STATS_records) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Verdana, 10'
 
 
 set grid front lt 8
@@ -86,7 +87,7 @@ set grid front lt 8
 #
 plot min_y-2 with filledcurves y1=mean_y*2 lc rgb '#228b22' title 'Average daily max SoC temperature', \
 max_y+2 with filledcurves y1=mean_y lc rgb '#afeeee' notitle, \
-datain u 1:2 with filledcurves x1 lc rgb '#ffd500' title sprintf("Daily max SoC temperature \260C"), \
+datain u 1:2 with filledcurves x1 lc rgb '#ffd500' title sprintf("Daily max SoC temperature °C"), \
 '' u 1:2 with lines lc rgb 'black' notitle
 
 #plot ["FROMTIME":"TOTIME"] datain using 1:5:(0.5) smooth acsplines lw 2 lc rgb 'steelblue'

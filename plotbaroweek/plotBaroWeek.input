@@ -1,0 +1,68 @@
+# ONE WEEK OF BAROMETRIC PRESSURE DATA
+#
+# Rev. 20131230/TMJ  -  tmj@bitwrap.no
+# http://annoyingdesigns.com 
+#
+# This script file can be modified, but please be careful. 
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of barometric pressure
+set terminal unknown
+set xdata time
+set timefmt '%Y.%m.%d %H:%M:%S'
+set datafile separator ','
+
+plot '/var/tmp/barodata.tmp' using 1:2 axis x1y1
+
+min_y = GPVAL_DATA_Y_MIN
+max_y = GPVAL_DATA_Y_MAX
+
+
+# Calculate mean of barometric pressure samples 
+unset xdata
+stats '/var/tmp/barodata.tmp' using 2
+set xdata time
+
+reset
+
+set terminal pngcairo enhanced size 1080, 480
+set encoding utf8
+set output '/var/tmp/baroweek.png' 
+
+# SUPPORT FUNCTION TO CONVERT hPa TO inHg
+toInHg(hPa) = (hPa / 33.8638866667)
+
+set ylabel 'hPa (mb)'
+set y2label 'inHg'
+
+set title "PLOTTITLE\nTIMESTAMP"  
+
+set grid front 
+set key left below
+
+set xtics rotate
+set xtics 86400
+set xtics font 'Helvetica, 9'
+unset mxtics
+set ytics nomirror
+set y2tics
+set y2range[toInHg(min_y):toInHg(max_y)]
+set format y "%#.1f"
+set format y2 "%#.2f"
+
+set xdata time
+set timefmt '%Y.%m.%d %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m.%Y")
+set auto fix
+
+# COMMENT/UNCOMMENT FOR METRIC OR US UNITS 
+# uncomment for hPa / mb units
+set label 1 sprintf("MIN = %#.1f hPa    MAX = %#.1f hPa   WEEK AVERAGE = %#.1f hPa", min_y,  max_y, STATS_mean) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Helvetica, 10'
+# uncomment for inHg units
+#set label 1 sprintf("MIN = %#.2f inHg    MAX = %#.2f inHg   WEEK AVERAGE = %#.2f inHg", toInHg(min_y),  toInHg(max_y), toInHg(STATS_mean)) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Helvetica, 10'
+
+plot min_y-2 with filledcurves y1=STATS_mean lc rgb '#effbfb' notitle, \
+max_y+2 with filledcurves y1=STATS_mean lc rgb '#effbfb' notitle, \
+STATS_mean with lines lw 2 lc rgb '#ff1493' title 'Average barometric pressure', \
+'/var/tmp/barodata.tmp' using 1:2:(1.0) smooth acsplines lw 2 lc rgb 'steelblue' title 'Recorded barometric pressure'

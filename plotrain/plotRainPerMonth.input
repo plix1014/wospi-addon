@@ -1,0 +1,67 @@
+# PLOT TOTAL RAIN PER MONTH
+#
+# Rev. 20140103/TMJ  -  tmj@bitwrap.no
+# http://annoyingdesigns.com
+#
+# This script file can be modified, but please be careful.
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
+# also find y2 scale for plot of rainfall data in inches
+set terminal unknown
+set xdata time
+set timefmt '%Y-%m'
+set datafile separator ','
+set style histogram
+plot '/var/tmp/monthlyRain.tmp' using 1:2 with boxes
+YMIN = 0
+YMAX = GPVAL_Y_MAX + 1
+Y2MIN = YMIN
+Y2MAX = YMAX * 0.0393701
+reset
+
+
+set terminal pngcairo enhanced size 1080, 480
+set encoding utf8
+set output '/var/tmp/monthlyrain.png'
+set xdata time
+set timefmt '%Y-%m'
+set datafile separator ','
+set style histogram
+set title sprintf("PLOTTITLE\nTIMESTAMP")
+
+set label 1 sprintf("Rainfall data recordings valid from COMMISSIONDATE") center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Helvetica, 10'
+
+set yrange[YMIN:YMAX]
+set y2range[Y2MIN:Y2MAX]
+
+set ytics format "%0.1f mm"
+set y2tics format "%0.2f\""
+set ytics nomirror
+set y2tics nomirror
+
+set grid
+set key off
+
+set ylabel 'Monthly rainfall'
+set xlabel textcolor rgb 'red'
+set xlabel offset 0,-1.2
+set xlabel font 'Helvetica, 10'
+
+set xlabel 'NOTE: Rainfall data only correct in non-freezing temperature conditions. Month totals include condensation readings of RAINTHRESHOLDTEXT.'
+
+set bmargin at screen 0.22
+set xtics rotate
+set xtics font 'Helvetica, 12'
+set format x '%m.%Y'
+set style fill solid border -1
+
+seconds_per_day = 60 * 60 * 24
+set xtics seconds_per_day * 30
+set auto fix
+
+plot '/var/tmp/monthlyRain.tmp' using 1:2 with boxes lc rgb 'steelblue'
+
+
+
+

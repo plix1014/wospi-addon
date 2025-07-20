@@ -15,7 +15,8 @@ if (isdos == 1) {
 datain  = tmpdir . 'prevraindata.tmp'
 dataout = tmpdir . 'monthlyraindays_prev.png'
 
-set terminal png enhanced size 1080, 480
+set terminal pngcairo enhanced size 1080, 480
+set encoding utf8
 set output dataout
 set xdata time
 set timefmt '%Y-%m'

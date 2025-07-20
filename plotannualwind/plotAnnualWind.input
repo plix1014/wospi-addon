@@ -26,12 +26,12 @@ reset
 
 # PERFORM THE ACTUAL PLOTS 
 set terminal pngcairo transparent enhanced size 1080, 480
-set encoding iso_8859_1
+set encoding utf8
 set output '/var/tmp/wind_annual.png' 
 
 set title "PLOTTITLE\nTIMESTAMP\n"
 
-set label 1 sprintf("Average wind direction was %d\260 with a standard deviation of %1.1f\260", mean_y, stddev_y) center at graph(1, 0.5), graph(1,1.07) textcolor rgb 'black' font 'Helvetica, 12'
+set label 1 sprintf("Average wind direction was %d° with a standard deviation of %1.1f°", mean_y, stddev_y) center at graph(1, 0.5), graph(1,1.07) textcolor rgb 'black' font 'Helvetica, 12'
 
 set grid
 set key left below
@@ -39,7 +39,7 @@ set key left below
 set ytics 90
 set yrange[0:360]
 set ylabel 'Wind Direction - Degrees'
-set ytics format "%0.0f\260"
+set ytics format "%0.0f°"
 
 set y2tics('N' 0, 'E' 90, 'S' 180, 'W' 270, 'N' 360)
 set y2range[0:360]

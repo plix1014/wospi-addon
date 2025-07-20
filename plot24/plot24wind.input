@@ -1,0 +1,101 @@
+# PLOT 10-MINUTE WIND VELOCITY AND WIND GUST SPEED
+#
+# Rev. 20130314/TMJ  -  tmj@bitwrap.no
+# http://annoyingdesigns.com 
+#
+# This script file can be modified, but please be careful.
+
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:7 lc rgb 'steelblue' pt 5 title 'Wind (momentanous)' axis x1y1,\
+ '/var/tmp/plotdata.tmp' using 1:16 lc rgb 'red' pt 5 title 'Gust (10-minute)'  axis x1y1
+
+FACTOR = 0.514444444
+YMIN = GPVAL_Y_MIN * FACTOR
+YMAX = GPVAL_Y_MAX * FACTOR
+reset
+
+
+
+# PERFORM THE ACTUAL PLOTS 
+
+set terminal pngcairo enhanced size 1080, 768
+set encoding utf8
+set output '/var/tmp/wind_24hr.png' 
+
+set size 1,1
+set origin 0,0
+
+set multiplot title "PLOTTITLE\nTIMESTAMP\n"
+
+
+# FIRST GRAPH - WIND DIRECTION
+set size 1,0.45
+set origin 0,0.5	
+set title 'WIND DIRECTION'
+set grid
+set nokey
+
+set ytics 90
+set yrange[0:360]
+set ylabel 'Wind Direction - Degrees'
+set ytics format "%0.0f°"
+
+set y2tics('N' 0, 'E' 90, 'S' 180, 'W' 270, 'N' 360)
+set y2range[0:360]
+set y2label 'Wind Direction - Cardinal' rotate by 90 left
+
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+
+SUNRISE = "`head -1 /var/tmp/sunrise.tmp`"
+SUNSET = "`head -1 /var/tmp/sunset.tmp`"
+set label sprintf("^{Sunrise}") center at SUNRISE, graph(1,1.04)
+set label sprintf("^{Sunset}") center at SUNSET, graph(1,1.04)
+set arrow from SUNRISE,graph(0,0) to SUNRISE,graph(1,1) nohead ls 4
+set arrow from SUNSET,graph(0,0) to SUNSET,graph(1,1) nohead ls 4
+
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:6  lc rgb 'dark-green' pt 5
+
+
+
+
+# SECOND GRAPH - WIND and WIND GUST SPEED
+reset
+set size 1,0.45
+set origin 0,0
+set title 'WIND SPEED and WIND GUST SPEED'
+set grid
+set key below
+
+set ylabel 'Knots'
+set y2label 'M/sec.' rotate by 90 left
+set ytics nomirror
+set y2tics nomirror
+set y2range[YMIN:YMAX]
+
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+
+set label sprintf("^{Sunrise}") center at SUNRISE, graph(1,1.04)
+set label sprintf("^{Sunset}") center at SUNSET, graph(1,1.04)
+set arrow from SUNRISE,graph(0,0) to SUNRISE,graph(1,1) nohead ls 4
+set arrow from SUNSET,graph(0,0) to SUNSET,graph(1,1) nohead ls 4
+
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:7 lc rgb 'steelblue' pt 5 title 'Wind speed (momentanous)' axis x1y1,\
+ '/var/tmp/plotdata.tmp' using 1:16 lc rgb 'red' pt 5 title 'Wind gust speed (10-minute)'  axis x1y1
+
+
+
+

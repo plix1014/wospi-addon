@@ -1,0 +1,95 @@
+# RAINFALL OVER A ONE-MONTH PERIOD
+#
+# Rev. 20140103/TMJ  -  tmj@bitwrap.no
+# http://annoyingdesigns.com 
+#
+# This script file can be modified, but please be careful. 
+# Will plot both mm and inches using y1 and y2 scales.
+
+
+
+# SUPPORT FUNCTION TO CONVERT mm TO in
+toIn(mm) = (mm * 0.0393701)
+
+
+# filter out condensation readings  -  refer to config.py for details
+filter(x) = ( x > RAINTHRESHOLD_MM) ? (x) : (0)
+
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
+# also find y2 scale for plot of rainfall data in inches
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y'
+set datafile separator ','
+set style histogram
+plot ['FROMTIME':'TOTIME'] '/var/tmp/plotraindata.tmp' using 1:(filter($2)) with boxes
+YMIN = 0
+YMAX = GPVAL_Y_MAX + 1
+Y2MIN = YMIN
+Y2MAX = YMAX * 0.0393701
+
+
+
+# Count number of records
+unset xdata
+stats ["FROMTIME":"TOTIME"] '/var/tmp/plotraindata.tmp' using 2
+set xdata time
+
+reset
+
+
+
+set terminal pngcairo enhanced size 1080, 480
+set encoding utf8
+
+set output '/var/tmp/plotraindays.png'
+
+# Use this plot title for the first 31 days of WOSPi operation
+#set title sprintf("PLOTTITLE - TOTAL %#.1f mm / %#.2f\"\nTIMESTAMP", STATS_sum, toIn(STATS_sum))
+
+# Use this plot title AFTER the first 31 days of operation
+set title sprintf("PLOTTITLE\nTIMESTAMP")
+
+# DO NOT use this label during the first 31 days of WOSPi operation - will interfere with the COMMISSIONDATE marker
+set label 1 sprintf("Total in period: %#.1f mm / %#.2f\"", STATS_sum, toIn(STATS_sum)) center at graph(1, 0.5), graph(1,1.04) textcolor rgb 'black' font 'Helvetica, 10'
+
+set style histogram
+
+set ylabel 'Daily rainfall'
+set xlabel textcolor rgb 'red'
+set xlabel offset 0,-0.5
+set xlabel font 'Helvetica, 10'
+set xlabel 'NOTE: Rainfall data only valid for non-freezing temperature conditions. Readings of RAINTHRESHOLDTEXT or less ignored.'
+
+set grid
+set key off
+
+set xdata time
+set timefmt '%d.%m.%Y'
+set datafile separator ','
+set format x '%d.%m'
+set bmargin at screen 0.15
+set ytics format "%0.1f mm"
+set y2tics format "%0.2f\""
+set ytics nomirror
+set y2tics nomirror
+set xtics rotate 
+set xtics font 'Helvetica, 12'
+set style fill solid border -1
+set yrange[YMIN:YMAX]
+set y2range[Y2MIN:Y2MAX]
+seconds_per_day = 60 * 60 * 24
+set xtics seconds_per_day
+set offset seconds_per_day/2, seconds_per_day/2
+set boxwidth seconds_per_day 
+
+
+if ('COMMISSIONDATE' >= 'FROMTIME') set label sprintf("^{Start of data recordings}") textcolor rgb 'red' center at 'COMMISSIONDATE', graph(1,1.02); set arrow 1 from 'COMMISSIONDATE', graph(0,0) to 'COMMISSIONDATE', graph(1,1) nohead ls 4 lc rgb 'red'
+
+plot ['FROMTIME':'TOTIME'] '/var/tmp/plotraindata.tmp' u 1:(filter($2)) with boxes lc rgb 'steelblue' 
+
+
+
+

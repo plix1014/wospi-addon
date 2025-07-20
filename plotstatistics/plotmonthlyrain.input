@@ -33,7 +33,8 @@ max_x = GPVAL_DATA_X_MAX + 86400*15
 
 reset 
 
-set terminal png enhanced size 1080, 480
+set terminal pngcairo enhanced size 1080, 480
+set encoding utf8
 set output dataout
 set xdata time
 set timefmt '%Y-%m'

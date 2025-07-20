@@ -1,0 +1,193 @@
+# TEMPERATURE, DEW POINT TEMPERATURE, RELATIVE HUMIDITY, 
+# SOLAR RADIATION, UV RADIATION, BAROMETRIC PRESSURE
+#
+# Rev. 20140323/TMJ  -  tmj@bitwrap.no
+# http://annoyingdesigns.com 
+#
+# This script file can be modified, but please be careful. 
+
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of barometric pressure
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:5 
+
+baro_min_y = GPVAL_DATA_Y_MIN
+baro_max_y = GPVAL_DATA_Y_MAX
+
+reset
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of Td 
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:4
+
+Td_min_y = GPVAL_DATA_Y_MIN
+Td_max_y = GPVAL_DATA_Y_MAX
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot of RH
+set terminal unknown
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:3
+
+RH_min_y = GPVAL_DATA_Y_MIN
+RH_max_y = GPVAL_DATA_Y_MAX
+
+reset
+
+
+
+set terminal pngcairo enhanced size 1080, 768
+set encoding utf8
+set output '/var/tmp/wx_24hr.png' 
+if (GPVAL_VERSION >= 5.0) {set colors classic}
+
+set size 1,1
+set origin 0,0
+
+set multiplot title "PLOTTITLE\nTIMESTAMP"  
+
+
+# SUPPORT FUNCTION TO CONVERT DEGREES C TO DEGREES F 
+toF(temp) = (temp * 1.8) + 32
+
+
+# SUPPORT FUNCTION TO CONVERT hPa TO inHg
+toInHg(hPa) = (hPa / 33.8638866667)
+
+
+# FIRST GRAPH - TEMPERATURE, DEW POINT and HUMIDITY
+set size 1,0.45
+set origin 0,0.5
+
+# NOTE: Set ylabel for temperature in degrees C or F - uncomment/comment (#) below
+set ylabel "Temperature °C"
+#set ylabel "Temperature °F"
+
+set title sprintf("TEMPERATURE (T), DEW POINT TEMPERATURE (T_{d}), % RELATIVE HUMIDITY")
+set grid
+
+set key below
+set key spacing 3
+
+set y2tics 5
+set ytics nomirror
+set y2label "Relative Humidity %"
+set y2range[RH_min_y-1 : RH_max_y+5 > 100 ? 100 : RH_max_y+5]
+set yrange[Td_min_y-2 : *]
+
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+
+SUNRISE = "`head -1 /var/tmp/sunrise.tmp`"
+SUNSET = "`head -1 /var/tmp/sunset.tmp`"
+set label sprintf("^{Sunrise}") center at SUNRISE, graph(1,1.04)
+set label sprintf("^{Sunset}") center at SUNSET, graph(1,1.04)
+set arrow from SUNRISE,graph(0,0) to SUNRISE,graph(1,1) nohead ls 4 lw 2 
+set arrow from SUNSET,graph(0,0) to SUNSET,graph(1,1) nohead ls 4 lw 2
+
+
+# NOTE: ---------- READ CAREFULLY ---------- READ CAREFULLY ---------- READ CAREFULLY ----------
+# NOTE: To plot temperature in degrees F or degrees C, uncomment/comment (#) the corresponding lines 
+#       below. F and C units cannot be used in the same data plot. 
+#       Also adjust the y axis label (see NOTE above) to indicate C or F units. 
+
+# NOTE: Uncomment for temperature plot in degrees F 
+#plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:(toF($2)) with lines lw 2 lc rgb 'steelblue' title 'T' axis x1y1, \
+#'/var/tmp/plotdata.tmp' using 1:(toF($4)) with lines lw 2 lc rgb '#DC143C' title sprintf("   T_{d}") axis x1y1, \
+#'/var/tmp/plotdata.tmp' using 1:3 with lines lw 1 lc rgb '#006400' title '   % RH' axis x1y2
+
+# NOTE: Uncomment for temperature plot in degrees C
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:2 with lines lw 2 lc rgb 'steelblue' title 'T' axis x1y1, \
+'/var/tmp/plotdata.tmp' using 1:4 with lines lw 2 lc rgb '#DC143C' title sprintf("   T_{d}") axis x1y1, \
+'/var/tmp/plotdata.tmp' using 1:3 with lines lw 1 lc rgb '#006400' title '   % RH' axis x1y2
+# NOTE: ---------- READ CAREFULLY ---------- READ CAREFULLY ---------- READ CAREFULLY ----------
+
+
+
+# SECOND GRAPH - SOLAR RADIATION, UV INDEX
+# NOTE: If your station is not equipped with these sensors, simply comment out (#) the entire section below
+reset
+set size 0.5,0.45
+set origin 0,0
+set ylabel sprintf("Watts / m^{2}")
+set title "SOLAR RADIATION (SR) and UV INDEX (UV)"
+set grid
+
+set key below
+set key spacing 3
+
+set yrange[0:]
+set y2range[0:]
+set y2tics 2
+set ytics nomirror
+set y2label "UV Index"
+set y2range[-0.1:16]
+
+set xtics font 'Helvetica, 9'
+
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+set label sprintf("^{Sunrise}") center at SUNRISE,graph(1,1.04)
+set label sprintf("^{Sunset}") center at SUNSET,graph(1,1.04)
+set arrow from SUNRISE,graph(0,0) to SUNRISE,graph(1,1)  nohead ls 4 lw 2 
+set arrow from SUNSET,graph(0,0) to SUNSET,graph(1,1) nohead ls 4 lw 2 
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:9 with lines lw 2 lc rgb 'steelblue' title 'SR' axis x1y1, \
+'/var/tmp/plotdata.tmp' using 1:8 with lines lw 2 lc rgb '#DC143C' title '   UV' axis x1y2
+# NOTE: the below line can be used to omit UV plotting when recorded values are <= 0.0 -- replace the above line with this one:
+#'/var/tmp/plotdata.tmp' using 1:($8 > 0.0 ? $8 : 1/0) with lines lw 2 lc rgb '#DC143C' title '   UV' axis x1y2
+
+
+
+# THIRD GRAPH - BAROMETRIC PRESSURE
+reset
+
+# NOTE: ---------- READ CAREFULLY ---------- READ CAREFULLY ---------- READ CAREFULLY ----------
+# NOTE: If SOLAR and UV plots ARE desired, uncomment the two lines below
+#       AND the "second graph" section above. 
+set size 0.5,0.45
+set origin 0.5,0
+
+# If SOLAR and UV plots ARE NOT desired, uncomment the two lines below
+# and comment out (#) the entire "second graph" section above. 
+#set size 1.0,0.45
+#set origin 0,0
+# NOTE: ---------- READ CAREFULLY ---------- READ CAREFULLY ---------- READ CAREFULLY ----------
+
+
+# uncomment four lines below for dual y-axis values (hPa (mb) AND inHg) + set font size to 9
+set xtics font 'Helvetica, 9'
+set ytics font 'Helvetica, 11'
+#set y2tics font 'Helvetica, 9'
+
+set ylabel 'hPa (mb)' font 'Helvetica, 11' offset 2,0
+#set y2label 'inHg' font 'Helvetica, 9' offset -2.2,0
+set ytics nomirror
+#set y2tics
+set yrange[baro_min_y-1:baro_max_y+1]
+#set y2range[toInHg(baro_min_y-1):toInHg(baro_max_y+1)]
+
+set title "BAROMETRIC PRESSURE"
+set grid
+set nokey 
+set xdata time
+set timefmt '%d.%m.%Y %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m\n%H:%M")
+
+set format y '%#.1f'
+#set format y2 '%#.2f'
+
+plot ["FROMTIME":"TOTIME"] '/var/tmp/plotdata.tmp' using 1:5:(0.5) smooth acsplines lw 2 lc rgb 'steelblue'
+

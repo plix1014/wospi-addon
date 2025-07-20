@@ -16,7 +16,8 @@ year    = system("head -1 ".tmpdir."labels_rain.tmp")
 datain  = tmpdir . year . '.statistics_month_rain.csv'
 dataout = tmpdir . 'monthlyrain_' . year . '.png'
 
-set terminal png enhanced size 1080, 480
+set terminal pngcairo enhanced size 1080, 480
+set encoding utf8
 set output dataout
 set xdata time
 set timefmt '%Y-%m'
