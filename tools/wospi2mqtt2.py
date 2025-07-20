@@ -25,7 +25,7 @@ MQTT_QOS   = 1
 # read environment
 WXIN                  = os.environ.get('WXIN', '/var/tmp/wxdata.xml')
 #
-MQTT_HOST             = os.environ.get('MQTT_HOST', '192.168.20.70')
+MQTT_HOST             = os.environ.get('MQTT_HOST', '192.168.20.74')
 MQTT_PORT             = os.environ.get('MQTT_PORT', '1883')
 MQTT_TOPIC_BASE       = os.environ.get('MQTT_TOPIC_BASE', 'athome/eg/wospi')
 
@@ -52,6 +52,8 @@ MQTT_MSG_ALL          = ''
 WXDATA = {}
 
 INFO  = True
+WARN  = True
+ERROR = True
 DEBUG = False
 
 Connected = False
@@ -77,12 +79,22 @@ def parseXML(file):
     wxdata={}
 
     if os.path.exists(file):
-        tree = ET.parse(file)
-        root = tree.getroot()
-        for child in root:
-            wxdata[child.tag] = child.text
+        # xml.etree.ElementTree.ParseError: not well-formed (invalid token): line 61, column 45
 
-        print_dbg(DEBUG, "xml new outtemp_c: %s" % wxdata['outtemp_c'])
+        # additional wait. Sometimes, the pyinotify leads to above error
+        time.sleep(2)
+        try:
+            # try to parse
+            tree = ET.parse(file)
+            root = tree.getroot()
+            for child in root:
+                wxdata[child.tag] = child.text
+
+            print_dbg(DEBUG, "xml new outtemp_c: %s" % wxdata['outtemp_c'])
+
+        except Exception as e:
+            print(f"An error occurred during parsing of {file}: {e}")
+
 
     return wxdata
 
@@ -178,6 +190,7 @@ def initialize():
     mqttc.on_disconnect = on_disconnect
 
     # Connect with MQTT Broker
+    print_dbg(INFO, "trying to connect to %s:%s" % (MQTT_HOST,MQTT_PORT))
     mqttc.connect(MQTT_HOST, int(MQTT_PORT), int(MQTT_KEEPALIVE_INTERVAL))
 
     return mqttc
