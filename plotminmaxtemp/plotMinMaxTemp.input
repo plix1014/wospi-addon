@@ -12,7 +12,7 @@ toF(temp) = (temp * 1.8) + 32
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
 # Scale Y2 axis for temperature in deg. F
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%Y.%m.%d'
 set datafile separator ','

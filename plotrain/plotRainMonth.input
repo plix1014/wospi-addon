@@ -19,7 +19,7 @@ filter(x) = ( x > RAINTHRESHOLD_MM) ? (x) : (0)
 
 # RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
 # also find y2 scale for plot of rainfall data in inches
-set terminal unknown
+set terminal dumb
 set xdata time
 set timefmt '%d.%m.%Y'
 set datafile separator ','
