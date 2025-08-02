@@ -490,37 +490,39 @@ def rain_stats(pdin,key,fromMonth,toMonth,do_fill):
     # rain_dd
     pd_rain_d  = pdin.iloc[:,[0]]
 
-    FREQ = 'M'
+    M_FREQ = 'ME'
+    Q_FREQ = 'QE'
 
     # resample to day and calc some basic stats
     pd_ver = int(re.sub("\.","",pd.__version__))
     if (pd_ver <= 141):
+        M_FREQ = 'M'
         # old syntax
         # numpy: 1.6.2
         # pandas: 0.14.1
-        r_mean = pd_rain.resample(FREQ, how='mean')
-        r_max   = pd_rain.resample(FREQ, how='max')
-        r_max_d = pd_rain_d.resample(FREQ, how='max')
-        r_sum_d = pd_rain_d.resample(FREQ, how='sum')
+        r_mean = pd_rain.resample(M_FREQ, how='mean')
+        r_max   = pd_rain.resample(M_FREQ, how='max')
+        r_max_d = pd_rain_d.resample(M_FREQ, how='max')
+        r_sum_d = pd_rain_d.resample(M_FREQ, how='sum')
 
     else:
         # PLI new syntax
         # numpy: 1.12.1
         # pandas: 0.19.2
-        r_mean = pd_rain.resample(FREQ).mean()
-        r_max   = pd_rain.resample(FREQ).max()
+        r_mean = pd_rain.resample(M_FREQ).mean()
+        r_max   = pd_rain.resample(M_FREQ).max()
         # max mm per day/month
-        r_max_d = pd_rain_d.resample(FREQ).max()
+        r_max_d = pd_rain_d.resample(M_FREQ).max()
         # r_sum_d = r_max = monthly rain
-        r_sum_d = pd_rain_d.resample(FREQ).sum()
-        r_sum_q = pd_rain_d.resample('Q').sum()
-        r_avg_m = pd_rain_d.resample(FREQ).mean()
-        #r_avg_m = r_sum_d.resample(FREQ).mean()
+        r_sum_d = pd_rain_d.resample(M_FREQ).sum()
+        r_sum_q = pd_rain_d.resample(Q_FREQ).sum()
+        r_avg_m = pd_rain_d.resample(M_FREQ).mean()
+        #r_avg_m = r_sum_d.resample(M_FREQ).mean()
 
 
     # number of rain days, avg mm/day (if raining)
-    r_nr_d  = pd_rain_d.mask(pd_rain_d.rain_dd.le(0.2)).groupby(pd.Grouper(freq='M')).count()
-    r_avg_d = pd_rain_d.mask(pd_rain_d.rain_dd.le(0.2)).groupby(pd.Grouper(freq='M')).mean()
+    r_nr_d  = pd_rain_d.mask(pd_rain_d.rain_dd.le(0.2)).groupby(pd.Grouper(freq=M_FREQ)).count()
+    r_avg_d = pd_rain_d.mask(pd_rain_d.rain_dd.le(0.2)).groupby(pd.Grouper(freq=M_FREQ)).mean()
 
     r_avg_m = r_sum_d.rolling(window=2).mean()
     #r_avg_m.at[key + '-01-31', 'rain_dd'] = r_sum_d.loc[key + '-01-31', 'rain_dd']
@@ -675,7 +677,7 @@ def temp_stats(pdin,key,fromMonth,toMonth,do_fill):
     # need this for resampling
     # to have the required timerange within the same day
     # last night was a trope-night if between 06:00pm and 06:00am Tmin >= 20degC
-    pdt = pd_temp.shift(6, freq='H')
+    pdt = pd_temp.shift(6, freq='h')
     print_dbg(DEBUG, "DEBUG: pandas temperature df tshift 6h: \n%s" % (pdt.tail(3)))
 
     # the temperature we need to check is now between 00:00 and 12:00 noon
