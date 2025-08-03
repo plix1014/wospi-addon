@@ -49,8 +49,6 @@
 #  PLI, 18.07.2025: changes for python3
 #
 
-
-
 import sys,os
 
 CONFIG_HOME = os.environ.get('HOMEPATH')
@@ -317,6 +315,13 @@ def print_dbg(level,msg):
     return
 
 
+def send_line(sock, data):
+    print("sending : %s" % data)
+    if isinstance(data, str):
+        sock.sendall((data + '\r\n').encode('utf-8'))
+    else:
+        sock.sendall(data + b'\r\n')
+
 #-------------------------------------------------------------------------------
 def main():
     # regex rule, login with wrong credentials
@@ -348,24 +353,24 @@ def main():
     CWOP_SW_VERS = get_wospi_version(config.MINMAXFILE)
     LOGIN="user %s pass %s vers %s %s" % (CWOP_USER,CWOP_PASS,CWOP_SW_NAME,CWOP_SW_VERS)
 
-    print("------------------------------------------------------------------------------------------------------------------")
-    print("Login: %s" % LOGIN)
-    print("DATA : %s" % CWOP_DATA)
-    print("------------------------------------------------------------------------------------------------------------------")
+    print("---------------------------------------------------------------------------------------------------------------------")
+    print("Login   : %s" % LOGIN)
+    print("DATA    : %s" % CWOP_DATA)
+    print("---------------------------------------------------------------------------------------------------------------------")
 
     if TESTING:
         print_dbg(TRACE,'TESTING activated. Set TESTING=False, if you want to upload data. Exiting... ')
         sys.exit()
 
     # Create a TCP/IP socket
-    print_dbg(TRACE,'1a-connecting : "%s"' % (CWOP_SRV))
+    print_dbg(True,'connect : "%s"' % (CWOP_SRV))
     sock = socket.create_connection((CWOP_SRV, CWOP_PRT))
 
     try:
         data         = sock.recv(buflen)
-        resp_connect = data.strip()
+        resp_connect = data.strip().decode('utf-8')
 
-        re_resp_connect = re.compile('.*' + resp_connect + '.*')
+        re_resp_connect = re.compile('.*' + re.escape(resp_connect) + '.*')
 
         if re.match(re_resp_connect, resp_connect):
             pass
@@ -376,9 +381,10 @@ def main():
 
         # Send login data
         print_dbg(TRACE,'\n2a-sending    : "%s"' % LOGIN)
-        sock.sendall(LOGIN + '\r\n')
+        send_line(sock, LOGIN)
+
         data       = sock.recv(buflen)
-        resp_login = data.strip()
+        resp_login = data.strip().decode('utf-8')
 
         print_dbg(TRACE,"2b-received   : %s" % (resp_login))
 
@@ -388,9 +394,10 @@ def main():
         else:
             time.sleep(1)
             print_dbg(TRACE,'2a-resending  : "%s"' % LOGIN)
-            sock.sendall(LOGIN + '\r\n')
+            send_line(sock, LOGIN)
+
             data       = sock.recv(buflen)
-            resp_login = data.strip()
+            resp_login = data.strip().decode('utf-8')
 
             print_dbg(TRACE,"2c-received   : %s" % (resp_login))
 
@@ -404,10 +411,10 @@ def main():
 
         # now, we really send the data
         print_dbg(TRACE,'\n3a-sending    : "%s"' % CWOP_DATA)
-        sock.sendall(CWOP_DATA + '\r\n')
+        send_line(sock, CWOP_DATA)
 
         data     = sock.recv(buflen)
-        resp_msg = data.strip()
+        resp_msg = data.strip().decode('utf-8')
         print_dbg(TRACE,"3b-received   : %s" % (resp_msg))
 
         if re.match(re_resp_connect, resp_msg):
@@ -415,11 +422,14 @@ def main():
         else:
             time.sleep(1)
             print_dbg(TRACE,'3a-resending  : "%s"' % CWOP_DATA)
-            sock.sendall(CWOP_DATA + '\r\n')
+            send_line(sock, CWOP_DATA)
+
             data     = sock.recv(buflen)
-            resp_msg = data.strip()
+            resp_msg = data.strip().decode('utf-8')
 
             print_dbg(TRACE,"3c-received   : %s" % (resp_msg))
+
+        print_dbg(True,"received: %s" % (resp_msg))
 
     finally:
         print_dbg(TRACE,'4a-closing socket')
