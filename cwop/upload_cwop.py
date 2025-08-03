@@ -82,9 +82,17 @@ CWOP_FIX = ">APRS,TCPIP*:"
 
 #-------------------------------------------------------------------------------
 
+def str_to_bool(value):
+    return str(value).strip() == '1'
+
+CWOP_TEST = str_to_bool(os.environ.get('CWOP_TEST'))
+
 # for testing, if 'True' no upload happens
 # set to 'False' for normal operation
-TESTING=False
+if CWOP_TEST:
+    TESTING=True
+else:
+    TESTING=False
 
 # just print more information
 DEBUG=False
