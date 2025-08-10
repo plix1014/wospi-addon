@@ -39,13 +39,21 @@ MQTT_TOPIC_UVINDEX    = MQTT_TOPIC_BASE + "/uvindex"
 MQTT_TOPIC_ALL        = MQTT_TOPIC_BASE + "/wxdata"
 
 # init variables
-MQTT_MSG_OTEMP        = 0
-MQTT_MSG_ITEMP        = 0
-MQTT_MSG_PRESSURE     = 0
-MQTT_MSG_RAINFALL24   = 0
-MQTT_MSG_DAYRAIN      = 0
-MQTT_MSG_UVINDEX      = 0
-MQTT_MSG_ALL          = ''
+#MQTT_MSG_OTEMP      = {"outtemp_c"     : None}
+#MQTT_MSG_ITEMP      = {"intemp_c"      : None}
+#MQTT_MSG_PRESSURE   = {"barometer_hpa" : None}
+#MQTT_MSG_RAINFALL24 = {"rainfall24h_mm": None}
+#MQTT_MSG_DAYRAIN    = {"dayrain_mm"    : None}
+#MQTT_MSG_UVINDEX    = {"uvindex"       : None}
+#MQTT_MSG_ALL          = ''
+
+MQTT_MSG_OTEMP = None
+MQTT_MSG_ITEMP = None
+MQTT_MSG_PRESSURE = None
+MQTT_MSG_RAINFALL24 = None
+MQTT_MSG_DAYRAIN = None
+MQTT_MSG_UVINDEX = None
+MQTT_MSG_ALL = None
 
 
 # empty
@@ -113,12 +121,19 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(MQTT_TOPIC_UVINDEX)
     client.subscribe(MQTT_TOPIC_ALL)
 
-    client.publish(MQTT_TOPIC_OTEMP,      MQTT_MSG_OTEMP,      MQTT_QOS)
-    client.publish(MQTT_TOPIC_ITEMP,      MQTT_MSG_ITEMP,      MQTT_QOS)
-    client.publish(MQTT_TOPIC_PRESSURE,   MQTT_MSG_PRESSURE,   MQTT_QOS)
-    client.publish(MQTT_TOPIC_RAINFALL24, MQTT_MSG_RAINFALL24, MQTT_QOS)
-    client.publish(MQTT_TOPIC_DAYRAIN,    MQTT_MSG_DAYRAIN,    MQTT_QOS)
-    client.publish(MQTT_TOPIC_UVINDEX,    MQTT_MSG_UVINDEX,    MQTT_QOS)
+    # Only publish if messages exist (file was read successfully)
+    if MQTT_MSG_OTEMP is not None:
+        client.publish(MQTT_TOPIC_OTEMP, MQTT_MSG_OTEMP, MQTT_QOS)
+    if MQTT_MSG_ITEMP is not None:
+        client.publish(MQTT_TOPIC_ITEMP, MQTT_MSG_ITEMP, MQTT_QOS)
+    if MQTT_MSG_PRESSURE is not None:
+        client.publish(MQTT_TOPIC_PRESSURE, MQTT_MSG_PRESSURE, MQTT_QOS)
+    if MQTT_MSG_RAINFALL24 is not None:
+        client.publish(MQTT_TOPIC_RAINFALL24, MQTT_MSG_RAINFALL24, MQTT_QOS)
+    if MQTT_MSG_DAYRAIN is not None:
+        client.publish(MQTT_TOPIC_DAYRAIN, MQTT_MSG_DAYRAIN, MQTT_QOS)
+    if MQTT_MSG_UVINDEX is not None:
+        client.publish(MQTT_TOPIC_UVINDEX, MQTT_MSG_UVINDEX, MQTT_QOS)
 
     global Connected
     Connected = True
@@ -163,17 +178,27 @@ def reread_xml():
     global MQTT_MSG_DAYRAIN
     global MQTT_MSG_UVINDEX
     global MQTT_MSG_ALL
+    global WXDATA
 
-    WXDATA = parseXML(WXIN)
+    WXDATA = parseXML(WXIN) or {}
 
-    if WXDATA:
-        MQTT_MSG_OTEMP      = json.dumps({"outtemp_c"     : WXDATA['outtemp_c']});
-        MQTT_MSG_ITEMP      = json.dumps({"intemp_c"      : WXDATA['intemp_c']});
-        MQTT_MSG_PRESSURE   = json.dumps({"barometer_hpa" : WXDATA['barometer_hpa']});
-        MQTT_MSG_RAINFALL24 = json.dumps({"rainfall24h_mm": WXDATA['rainfall24h_mm']});
-        MQTT_MSG_DAYRAIN    = json.dumps({"dayrain_mm"    : WXDATA['dayrain_mm']});
-        MQTT_MSG_UVINDEX    = json.dumps({"uvindex"       : WXDATA['uvindex']});
-        MQTT_MSG_ALL        = json.dumps(WXDATA);
+    if WXDATA:  # Only update messages if we got valid data
+        MQTT_MSG_OTEMP = json.dumps({"outtemp_c": WXDATA.get('outtemp_c')})
+        MQTT_MSG_ITEMP = json.dumps({"intemp_c": WXDATA.get('intemp_c')})
+        MQTT_MSG_PRESSURE = json.dumps({"barometer_hpa": WXDATA.get('barometer_hpa')})
+        MQTT_MSG_RAINFALL24 = json.dumps({"rainfall24h_mm": WXDATA.get('rainfall24h_mm')})
+        MQTT_MSG_DAYRAIN = json.dumps({"dayrain_mm": WXDATA.get('dayrain_mm')})
+        MQTT_MSG_UVINDEX = json.dumps({"uvindex": WXDATA.get('uvindex')})
+        MQTT_MSG_ALL = json.dumps(WXDATA)
+    else:
+        # Clear all messages if file doesn't exist or is invalid
+        MQTT_MSG_OTEMP = None
+        MQTT_MSG_ITEMP = None
+        MQTT_MSG_PRESSURE = None
+        MQTT_MSG_RAINFALL24 = None
+        MQTT_MSG_DAYRAIN = None
+        MQTT_MSG_UVINDEX = None
+        MQTT_MSG_ALL = None
 
 
 def initialize():
@@ -184,7 +209,7 @@ def initialize():
     mqttc = mqtt.Client()
 
     # Register publish callback function
-    mqttc.on_publish = on_publish
+    #mqttc.on_publish = on_publish
     mqttc.on_connect = on_connect
     mqttc.on_message = on_message
     mqttc.on_disconnect = on_disconnect
@@ -196,27 +221,126 @@ def initialize():
     return mqttc
 
 
+
 class EventHandler(pyinotify.ProcessEvent):
-    def my_init(self, mqtt):
+
+    def __init__(self, wm, path, mask, rec=False, mqtt=None):
+        self.wm = wm
+        self.path = path
+        self.mask = mask
+        self.rec = rec
         self.mqtt = mqtt
         self.delayCounter = 0
+        self.messages = {}
+        self.watches = smart_add_watch(wm, path, mask, rec)
+        super().__init__()
+
+
+    def process_IN_CREATE(self, event):
+        """Handle new file creation in watched directory"""
+        if event.pathname == self.path:
+            print_dbg(INFO, f"File appeared: {self.path}")
+            try:
+                # Add the file watch
+                self.watches['file'] = self.wm.add_watch(self.path, self.mask, rec=self.rec)
+                print_dbg(INFO, f"Added file watch: {self.path}")
+            except Exception as e:
+                print_dbg(ERROR, f"Error adding file watch: {e}")
+
+
+    def _is_valid_payload(self, payload):
+        """
+        Check if payload contains valid data
+        Handles both string numbers ("19.0") and actual numbers
+        """
+        try:
+            # If payload is a JSON string, parse it first
+            if isinstance(payload, str):
+                payload = json.loads(payload)
+
+            if not isinstance(payload, dict):
+                return False
+
+            for value in payload.values():
+                if value is None:
+                    continue
+
+                if isinstance(value, str):
+                    stripped = value.strip()
+                    if stripped:  # Non-empty string
+                        return True
+
+                elif isinstance(value, (int, float)):
+                    return True
+
+            return False
+        except json.JSONDecodeError:
+            return False
 
     def process_IN_CLOSE_WRITE(self, event):
         time.sleep(0.1)
         self.delayCounter += 1
         reread_xml()
-        print_dbg(INFO, "New wxdata written: %s (%d)" % (event.pathname,self.delayCounter))
+
+        # Create fresh message dictionaries with current values
+        self.messages = {
+            MQTT_TOPIC_OTEMP: {"outtemp_c": WXDATA.get('outtemp_c')},
+            MQTT_TOPIC_ITEMP: {"intemp_c": WXDATA.get('intemp_c')},
+            MQTT_TOPIC_PRESSURE: {"barometer_hpa": WXDATA.get('barometer_hpa')},
+            MQTT_TOPIC_RAINFALL24: {"rainfall24h_mm": WXDATA.get('rainfall24h_mm')},
+            MQTT_TOPIC_DAYRAIN: {"dayrain_mm": WXDATA.get('dayrain_mm')},
+            MQTT_TOPIC_UVINDEX: {"uvindex": WXDATA.get('uvindex')}
+        }
+
+        print_dbg(INFO, "New wxdata written: %s (%d)" % (event.pathname, self.delayCounter))
+
         if self.delayCounter >= 2:
-            print_dbg(DEBUG, "#-- publish start ----------------------------")
-            self.mqtt.publish(MQTT_TOPIC_OTEMP,      MQTT_MSG_OTEMP,      MQTT_QOS)
-            self.mqtt.publish(MQTT_TOPIC_ITEMP,      MQTT_MSG_ITEMP,      MQTT_QOS)
-            self.mqtt.publish(MQTT_TOPIC_PRESSURE,   MQTT_MSG_PRESSURE,   MQTT_QOS)
-            self.mqtt.publish(MQTT_TOPIC_RAINFALL24, MQTT_MSG_RAINFALL24, MQTT_QOS)
-            self.mqtt.publish(MQTT_TOPIC_DAYRAIN,    MQTT_MSG_DAYRAIN,    MQTT_QOS)
-            self.mqtt.publish(MQTT_TOPIC_UVINDEX,    MQTT_MSG_UVINDEX,    MQTT_QOS)
-            #self.mqtt.publish(MQTT_TOPIC_ALL,        MQTT_MSG_ALL,        MQTT_QOS)
+            print_dbg(INFO, "#-- publish start ----------------------------")
+
+            for topic, payload in self.messages.items():
+                print_dbg(DEBUG, f"Checking {topic}: {payload}")
+                if self._is_valid_payload(payload):
+                    self.mqtt.publish(topic, json.dumps(payload), MQTT_QOS)
+                    print_dbg(INFO, f"Published to {topic}: {payload}")
+                else:
+                    print_dbg(DEBUG, f"Skipping {topic} - no valid data: {payload}")
+
             print_dbg(INFO, "#-- publish end ------------------------------")
             self.delayCounter = 0
+
+
+
+def smart_add_watch(wm, path, mask, rec=False):
+    """
+    Continuously tries to add watch for file, falls back to directory watching.
+    Returns both file and directory watches (if any).
+    """
+    watches = {}
+    dir_path = os.path.dirname(path)
+
+    # First try to watch the directory (should always exist)
+    try:
+        if os.path.exists(dir_path):
+            watches['dir'] = wm.add_watch(dir_path, pyinotify.IN_CREATE)
+            print_dbg(DEBUG, f"Watching directory: {dir_path}")
+        else:
+            print_dbg(WARN, f"Parent directory does not exist: {dir_path}")
+            return watches
+    except Exception as e:
+        print_dbg(ERROR, f"Error watching directory: {e}")
+        return watches
+
+    # Then try to watch the file if it exists
+    try:
+        if os.path.exists(path):
+            watches['file'] = wm.add_watch(path, mask, rec=rec)
+            print_dbg(DEBUG, f"Watching file: {path}")
+    except Exception as e:
+        print_dbg(ERROR, f"Error watching file: {e}")
+
+    return watches
+
+
 
 #---------------------------------------------------------------------
 
@@ -231,9 +355,9 @@ def main():
 
     wm       = pyinotify.WatchManager()   # Watch Manager
     mask     = pyinotify.IN_CLOSE_WRITE   # watched events
-    handler  = EventHandler(mqtt=mqttc)
+    handler  = EventHandler(wm=wm, path=WXIN, mask=pyinotify.IN_CLOSE_WRITE, rec=True, mqtt=mqttc)
     notifier = pyinotify.Notifier(wm, handler)
-    wdd      = wm.add_watch(WXIN, mask, rec=True)
+    wdd      = smart_add_watch(wm, WXIN, mask, rec=True)
 
     mqttc.loop_start()
 
