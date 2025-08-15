@@ -90,7 +90,7 @@ set xlabel offset 0,-1.2
 set xlabel font 'Helvetica, 10'
 #set xlabel font 'Verdana, 10'
 
-set grid front lt 8
+set grid front lt 8 lc black
 set style fill transparent solid 0.7
 #set style fill pattern 4 bo
 
