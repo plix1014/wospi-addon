@@ -38,6 +38,9 @@ RUN_CWOP=1
 # save each precipitation values into csv (instead of daily sums)
 RUN_RAIN=1
 
+# OpenWeatherMap
+RUN_OWN=1
+
 # internal temperature
 RUN_INTERN=0
 # sunfile backup
@@ -139,6 +142,12 @@ fi
 # internal temperature
 if [ $RUN_INTERN -eq 1 ]; then
     $WOSPI/wetter/plotInternal.py 
+    echo
+fi
+
+# upload to Openweathermap
+if [ $RUN_OWN -eq 1 ]; then
+    $WOSPI/tools/openweather_upload.py
     echo
 fi
 
