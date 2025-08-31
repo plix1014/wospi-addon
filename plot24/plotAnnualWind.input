@@ -1,0 +1,63 @@
+# PLOT WIND DIRECTION FOR (UP TO) AN ENTIRE YEAR
+#
+# Rev. 20140204/TMJ  -  tmj@bitwrap.no
+# http://annoyingdesigns.com 
+#
+# This script file can be modified, but please be careful.
+
+
+# RETRIEVE GPVAL_Y_MIN and GPVAL_Y_MAX after imaginary plot
+set terminal dumb
+set xdata time
+set timefmt '%Y.%m.%d %H:%M:%S'
+set datafile separator ','
+
+plot '/var/tmp/plotannualwind.tmp' using 1:2 
+
+# Standard deviation for wind direction 
+# UFN, AVERAGE WIND DIRECTION will NOT be correctly calculated
+set fit logfile '/var/tmp/fit.log'
+f(x) = mean_y
+fit f(x) '/var/tmp/plotannualwind.tmp' using 1:2 via mean_y
+stddev_y = sqrt(FIT_WSSR / (FIT_NDF + 1))
+reset
+
+
+
+# PERFORM THE ACTUAL PLOTS 
+set terminal pngcairo transparent enhanced size 1080, 480
+set encoding utf8
+set output '/var/tmp/wind_annual.png' 
+
+set title "PLOTTITLE\nTIMESTAMP\n"
+
+set label 1 sprintf("Average wind direction was %d° with a standard deviation of %1.1f°", mean_y, stddev_y) center at graph(1, 0.5), graph(1,1.07) textcolor rgb 'black' font 'Helvetica, 12'
+
+set grid
+set key left below
+
+set ytics 90
+set yrange[0:360]
+set ylabel 'Wind Direction - Degrees'
+set ytics format "%0.0f°"
+
+set y2tics('N' 0, 'E' 90, 'S' 180, 'W' 270, 'N' 360)
+set y2range[0:360]
+set y2label 'Wind Direction - Cardinal' rotate by 90
+
+set xtics rotate
+set xtics font 'Helvetica, 9'
+set xdata time
+set timefmt '%Y.%m.%d %H:%M:%S'
+set datafile separator ','
+set format x sprintf("%d.%m.%Y")
+set auto fix
+
+set style fill transparent solid 0.5 noborder
+plot '/var/tmp/plotannualwind.tmp' using 1:2  lc rgb 'dark-green' pt 3 notitle, \
+mean_y-stddev_y with filledcurves y1=mean_y lt 1 lc rgb '#8fbc8f' notitle, \
+mean_y+stddev_y with filledcurves y1=mean_y lt 1 lc rgb '#8fbc8f' notitle, \
+mean_y w l lw 2 lc rgb '#ff1493' title 'Average wind direction', \
+'' u 1:2:(1.0) smooth bezier axis x1y1 lc rgb '#4b0082' lw 2 title "Bezier approximation of wind direction"
+
+
