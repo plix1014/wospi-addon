@@ -64,7 +64,7 @@ set ytics format "%0.0f°"
 
 set y2tics('N' 0, 'E' 90, 'S' 180, 'W' 270, 'N' 360)
 set y2range[0:360]
-set y2label 'Wind Direction - Cardinal' rotate by 90 left
+set y2label 'Wind Direction - Cardinal' rotate by 90
 
 set xdata time
 set timefmt '%d.%m.%Y %H:%M:%S'
@@ -94,7 +94,7 @@ set grid
 set key below
 
 set ylabel 'Knots'
-set y2label 'M/sec.' rotate by 90 left
+set y2label 'M/sec.' rotate by 90
 set ytics nomirror
 set y2tics nomirror
 set y2range[YMIN:YMAX]
