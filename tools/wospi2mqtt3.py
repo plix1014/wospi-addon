@@ -48,7 +48,7 @@ Connected = False
 def print_dbg(level, msg):
     now = time.strftime('%a %b %e %H:%M:%S %Y LT:')
     if level:
-        print("%s %s" % (now, msg))
+        print("%s MQTT %s" % (now, msg))
     return
 
 
