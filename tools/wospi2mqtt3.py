@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 #
+# triggers mqtt publish after four updates to the wxdata.xml
 # New Version with Category JSON & HA-friendly keys
 #
-# Created:     16.11.2025
-# Copyright:   (c) Peter Lidauer 2025
+# Created:     18.08.2018
+# Copyright:   (c) Peter Lidauer 2018
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
 # Changes:
+#  PLI, 24.10.2023: use enviroment variables for basic setings
+#  PLI, 18.07.2025: changes for python3
+#  PLI, 16.11.2025: New Version with Category JSON
+#
 
 import time
 import os
@@ -38,10 +43,11 @@ DEBUG = False
 Connected = False
 
 #---------------------------------------------------------------------
-
-def dbg(msg):
-    if DEBUG:
-        print(msg)
+def print_dbg(level,msg):
+    now = time.strftime('%a %b %e %H:%M:%S %Y LT:')
+    if level:
+        print("%s %s" % (now,msg))
+    return
 
 
 def parse_xml(path):
@@ -55,6 +61,7 @@ def parse_xml(path):
         tree = ET.parse(path)
         root = tree.getroot()
         return {c.tag: c.text for c in root}
+
     except Exception as e:
         print("XML parse error:", e)
         return {}
@@ -135,6 +142,8 @@ def on_connect(client, userdata, flags, rc):
 def on_disconnect(client, userdata, rc):
     print("Disconnected from MQTT.")
 
+
+#---------------------------------------------------------------------
 
 def main():
     mqttc = mqtt.Client()
