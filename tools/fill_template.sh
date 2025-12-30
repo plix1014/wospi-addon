@@ -15,6 +15,9 @@
 # Copyright:   (c) Peter Lidauer 2014, 2017
 # Licence:     CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/4.0/
 #-------------------------------------------------------------------------------
+# Changes:
+#  PLI, 30.12.2025: fix html errors, use css
+#
 
 # WOSPi installation directory
 WOSPI_HOME=/home/wospi/wetter
@@ -54,7 +57,7 @@ WXDATA_TXT=$TMPDIR/$OUTFILE
 
 mk_cond_template() {
     cat <<-EOF
-<b>Observations at __TIME__ LT</b><p/>
+<b>Observations at __TIME__ LT</b><p>
 
 <table>
 <tr>
@@ -75,7 +78,7 @@ mk_cond_template() {
 <tr>
 <td>SR   </td><td>__SR__ W </td>
 </tr>
-</table> <br />
+</table> <br>
 __FORECAST__
 
 EOF
@@ -83,7 +86,7 @@ EOF
 
 mk_vitamin_template() {
     cat <<-EOF
-<div align="center">
+<div class="center-block">
 __VITAMIN_D_MSG__ 
 </div>
 EOF
@@ -135,15 +138,15 @@ fi
 DOES_VITAD=$(bc <<< "$UV>3.0")
 if [ $DOES_VITAD -eq 1 ]; then
     if [[ $WX_LANG =~ GE ]]; then
-	VITAMIN_D_MSG="Vitamin D3 Synthese durch UV-B<br /> Strahlung ist nun möglich.<br /> Nutze die Sonne jetzt."
+	VITAMIN_D_MSG="Vitamin D3 Synthese durch UV-B<br> Strahlung ist nun möglich.<br> Nutze die Sonne jetzt."
     else
-	VITAMIN_D_MSG="Vitamin D3 synthesis by UV-B rays<br /> possible, if you expose<br /> your skin now"
+	VITAMIN_D_MSG="Vitamin D3 synthesis by UV-B rays<br> possible, if you expose<br> your skin now"
     fi
 else
     if [[ $WX_LANG =~ GE ]]; then
-	VITAMIN_D_MSG="Derzeit ist leider keine<br />Vitamin D3 Synthese möglich"
+	VITAMIN_D_MSG="Derzeit ist leider keine<br>Vitamin D3 Synthese möglich"
     else
-	VITAMIN_D_MSG="currently no Vitamin D3 synthesis<br /> possible"
+	VITAMIN_D_MSG="currently no Vitamin D3 synthesis<br> possible"
     fi
 fi
 
