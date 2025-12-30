@@ -70,6 +70,7 @@
 #-------------------------------------------------------------------------------
 # Changes:
 #  PLI, 18.07.2025: changes for python3
+#  PLI, 30.12.2025: remove border=1 from include html
 
 import os, sys, shutil, re
 import time, string
@@ -452,11 +453,17 @@ def save_html(df,key):
     """
     out = rebuild_name(statout_h,key)
 
-    with open(out, 'w') as f:
-        f.write(df.to_html(header=True,classes='df',float_format=lambda x: '%10.2f' % x))
+    html = df.to_html(header=True,classes='df',float_format=lambda x: '%10.2f' % x)
+
+    # Remove obsolete border attribute
+    html = html.replace('border="1"', '')
+
+    with open(out, 'w', encoding='utf-8') as f:
+        f.write(html)
         f.close()
 
     uploadAny(out, DO_SCP, KEEP_TMP, SCP)
+    return
 
 
 def save_labels(year):
