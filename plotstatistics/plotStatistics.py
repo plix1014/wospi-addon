@@ -233,7 +233,7 @@ def prepareCSVData(fromMonth,fromYear, tmpfile):
         os.unlink(tmpfile)
 
     start = date( year = fromYear, month = fromMonth, day = 1 )
-    end   = date.today()
+    end   = date.today() + timedelta(days=1)  # +1 so current month is included when today is the 1st
 
     print_dbg(DEBUG, "DEBUG: start: %s" % (start))
     print_dbg(DEBUG, "DEBUG: end  : %s" % (end))
@@ -299,7 +299,7 @@ def prepareCSVDataRain(fromMonth,fromYear, tmpfile):
         os.unlink(tmpfile)
 
     start = date( year = fromYear, month = fromMonth, day = 1 )
-    end   = date.today()
+    end   = date.today() + timedelta(days=1)  # +1 so current month is included when today is the 1st
 
     print_dbg(DEBUG, "DEBUG: start: %s" % (start))
     print_dbg(DEBUG, "DEBUG: end  : %s" % (end))
@@ -495,7 +495,7 @@ def rain_stats(pdin,key,fromMonth,toMonth,do_fill):
     Q_FREQ = 'QE'
 
     # resample to day and calc some basic stats
-    pd_ver = int(re.sub("\.","",pd.__version__))
+    pd_ver = int(re.sub(r"\.","",pd.__version__))
     if (pd_ver <= 141):
         M_FREQ = 'M'
         # old syntax
@@ -628,6 +628,10 @@ def rain_stats(pdin,key,fromMonth,toMonth,do_fill):
         for n in range(toMonth,fillMonth,-1):
             print_dbg(DEBUG, 'DEBUG: removing empty month: n %s' % (n))
             m_df = m_df[:-1]
+        # remove current month if no rain data exists yet (first day of month)
+        if len(m_df) > 0 and pd.isna(m_df.iloc[-1]['Daily Max']):
+            print_dbg(DEBUG, 'DEBUG: removing current month (no rain data yet)')
+            m_df = m_df[:-1]
 
 
     df_col = ['timestamp']
@@ -687,7 +691,7 @@ def temp_stats(pdin,key,fromMonth,toMonth,do_fill):
 
 
     # resample to day and calc some basic stats
-    pd_ver = int(re.sub("\.","",pd.__version__))
+    pd_ver = int(re.sub(r"\.","",pd.__version__))
     if (pd_ver <= 141):
         # old syntax
         # numpy: 1.6.2
@@ -726,10 +730,9 @@ def temp_stats(pdin,key,fromMonth,toMonth,do_fill):
     isTrue = lambda x:int(x==True)
     isNeg  = lambda x:int(x < 0)
 
-    # replace NaN by '0';
-    # needed if you provide the 'f' commandline parameter
-    # because future values are generated with NaN
-    temp_df.dropna(inplace=True)
+    # drop only rows where ALL values are NaN (synthetic future months from -f flag)
+    # keep partial days (e.g. first day of month) that may have NaN in trope column
+    temp_df.dropna(how='all', inplace=True)
     temp_df.fillna(0, inplace=True)
 
     # add additional stats rows
@@ -879,7 +882,7 @@ def save_html(df,key,tm):
 
     out = rebuild_name(sout,key)
 
-    html = df.to_html(header=True,classes='df',float_format=lambda x: '%10.2f' % x)
+    html = df.to_html(header=True,classes='df',float_format=lambda x: '%10.2f' % x,na_rep='-')
 
     # Remove obsolete border attribute
     html = html.replace('border="1"', '')
